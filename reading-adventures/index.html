@@ -55,6 +55,17 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 #stars svg{width:28px;height:28px;color:var(--quiet);transition:color .2s, transform .3s}
 #stars svg.on{color:var(--sun);transform:scale(1.15)}
 
+#cue{align-self:center;display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 20px;border-radius:99px;
+  background:var(--quiet);font-size:20px;font-weight:900;letter-spacing:.06em;transition:background .25s,color .25s}
+#cue svg{width:28px;height:28px}
+#cue.listen{background:var(--sun);color:var(--sun-ink)}
+#cue.pop{animation:cuepop .5s}
+@keyframes cuepop{40%{transform:scale(1.15)}}
+#turn{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  font-size:40px;font-weight:900;letter-spacing:.04em;color:var(--sun)}
+#turn.on{display:flex;animation:turnin .45s}
+#turn svg{width:120px;height:120px}
+@keyframes turnin{from{transform:scale(.4);opacity:0}}
 #stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
 #pals{display:grid;gap:calc(var(--ps)*.16);justify-content:center;align-content:center}
 
@@ -78,7 +89,18 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .pal.talk{animation:talk .45s}
 .pal.yes{animation:yes .7s}
 .pal.no,.stop.no{animation:no .4s}
-.pal.dim{opacity:.35}
+.pal.dim{background:color-mix(in srgb, var(--c) 30%, #10263a);color:rgba(255,255,255,.35);box-shadow:none}
+.pal.dim .eye{opacity:.45}
+.pal.spot{transform:scale(1.14);z-index:2}
+.badge{position:absolute;right:-12%;top:-14%;width:44%;height:44%;border-radius:50%;display:grid;place-items:center;color:#fff;
+  border:calc(var(--ps)*.03) solid #fff;animation:badge .35s cubic-bezier(.3,1.6,.5,1);z-index:3}
+.badge svg{width:62%;height:62%}
+.badge.ok{background:#1f6fd6}
+.badge.bad{background:#e0700a}
+@keyframes badge{from{transform:scale(0) rotate(-40deg)}}
+.bit{position:absolute;left:50%;top:50%;width:calc(var(--ps)*.1);height:calc(var(--ps)*.14);border-radius:3px;pointer-events:none;z-index:4;
+  animation:bit .8s ease-out forwards}
+@keyframes bit{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
 .pal.big{--ps:min(58vw,42vh,280px)}
 .pal.idle{animation:idle 1.6s infinite}
 @keyframes talk{30%{transform:scale(1.12) rotate(-3deg)}60%{transform:scale(1.06) rotate(3deg)}}
@@ -136,7 +158,8 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .conf{position:absolute;top:-20px;width:12px;height:18px;border-radius:3px;animation:conf linear forwards}
 @keyframes conf{to{transform:translateY(110vh) rotate(720deg)}}
 @media (prefers-reduced-motion: reduce){
-  .pal.idle,.round.pulse,#play,#win .jack,.eye{animation:none}
+  .pal.idle,.round.pulse,#play,#win .jack,.eye,.bit{animation:none}
+  .bit{display:none}
   .conf{display:none}
 }
 </style>
@@ -153,7 +176,8 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
     <span class="small ghost"></span>
   </div>
   <div id="stars" aria-hidden="true"></div>
-  <div id="stage"><div id="pals"></div></div>
+  <div id="cue" aria-live="polite"><span id="cueIcon"></span><span id="cueText"></span></div>
+  <div id="stage"><div id="pals"></div><div id="turn"><span id="turnIcon"></span><b>YOUR TURN!</b></div></div>
   <div id="bottom">
     <button class="round pulse" id="hear" aria-label="Hear the sound again" hidden></button>
     <button class="round pulse" id="next" aria-label="Next" hidden></button>
@@ -249,6 +273,7 @@ function tone(f1,f2,dur,vol,delay,type){
 const sfx={
   tap:()=>tone(520,620,.07,.10),
   yes:()=>{tone(660,660,.12,.13);tone(990,990,.2,.13,.11)},
+  no:()=>tone(210,150,.18,.13,0,'triangle'),
   win:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,f,.22,.14,i*.11))
 };
 
@@ -281,21 +306,57 @@ const show=(id,on)=>{ $(id).hidden=!on; };
 
 function start(L){
   run++; save.level=L; if(L>save.max) save.max=L; persist(); header();
-  $('win').classList.remove('on');
+  $('win').classList.remove('on'); $('turn').classList.remove('on');
   fresh = L<=LAST_NEW ? ORDER.slice((L-1)*2, L*2) : [];
   known = ORDER.slice(0, Math.min(ORDER.length, L*2));
   score=0; lastTarget=null; drawStars(0);
-  fresh.length ? meet(0) : ask();
+  fresh.length ? meet() : yourTurn();
 }
-function meet(i){
-  const id=fresh[i], my=run; let taps=0;
-  show('hear',false); show('next',false);
-  const g=$('pals'); g.innerHTML=''; g.style.gridTemplateColumns='auto';
-  const el=palEl(id); el.classList.add('big','idle'); g.appendChild(el);
-  const speak=()=>{ say(id); flash(el,'talk',460); };
-  setTimeout(()=>{ if(my===run) speak(); },450);
-  el.addEventListener('click',()=>{ speak(); if(++taps>=1) show('next',true); });
-  $('next').onclick=()=>{ sfx.tap(); (i+1<fresh.length) ? meet(i+1) : ask(); };
+const ICON={
+  listen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>',
+  tap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="12" cy="12" r="7"/><path d="M12 1.5v2M12 20.5v2M1.5 12h2M20.5 12h2"/></svg>',
+  ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  bad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>'
+};
+function cue(kind){
+  const c=$('cue'); c.className=kind;
+  $('cueIcon').innerHTML = kind==='listen'?ICON.listen:ICON.tap;
+  $('cueText').textContent = kind==='listen'?'LISTEN':'TAP THE PAL YOU HEAR';
+  flash(c,'pop',520);
+}
+function badge(el,kind){ const b=document.createElement('span'); b.className='badge '+kind; b.innerHTML=ICON[kind]; el.appendChild(b); }
+function burst(el){
+  for(let n=0;n<14;n++){
+    const s=document.createElement('span'), a=Math.PI*2*n/14+Math.random()*.4, d=el.offsetWidth*(.7+Math.random()*.5);
+    s.className='bit'; s.style.background=COLORS[n%COLORS.length];
+    s.style.setProperty('--dx',Math.cos(a)*d+'px'); s.style.setProperty('--dy',(Math.sin(a)*d-el.offsetWidth*.25)+'px'); s.style.setProperty('--r',(Math.random()*540-270)+'deg');
+    el.appendChild(s); setTimeout(()=>s.remove(),850);
+  }
+}
+/* Listen: the new pals are shown together and take turns saying their sound, twice round. Nothing to press. */
+async function meet(){
+  const my=run;
+  show('hear',false); show('next',false); cue('listen'); $('turn').classList.remove('on');
+  const g=$('pals'); g.innerHTML=''; sizeGrid(fresh.length);
+  const els=fresh.map(id=>{ const el=palEl(id); g.appendChild(el); el.addEventListener('click',()=>{ say(id); flash(el,'talk',460); }); return el; });
+  await wait(700); if(my!==run) return;
+  for (let pass=0; pass<2; pass++){
+    for (let i=0;i<fresh.length;i++){
+      els.forEach((e,k)=>{ e.classList.toggle('dim',k!==i); e.classList.toggle('spot',k===i); });
+      say(fresh[i]); flash(els[i],'talk',460);
+      await wait(pass?1250:1500); if(my!==run) return;
+    }
+  }
+  els.forEach(e=>e.classList.remove('dim','spot'));
+  await wait(350); if(my!==run) return;
+  yourTurn();
+}
+async function yourTurn(){
+  const my=run;
+  show('hear',false); $('pals').innerHTML=''; cue('find');
+  $('turnIcon').innerHTML=ICON.tap; $('turn').classList.add('on'); sfx.yes();
+  await wait(1300); if(my!==run) return;
+  $('turn').classList.remove('on'); ask();
 }
 function chooseTarget(){
   const bag=[];
@@ -324,7 +385,7 @@ async function choose(id,el){
   if (locked || el.classList.contains('dim')) return;
   const my=run;
   if (id===target){
-    locked=true; sfx.yes(); flash(el,'yes',720);
+    locked=true; sfx.yes(); flash(el,'yes',720); badge(el,'ok'); burst(el);
     [...$('pals').children].forEach(p=>{ if(p!==el) p.classList.add('dim'); });
     if (save.miss[target]>0) save.miss[target]--;
     score++; drawStars(score); persist();
@@ -334,7 +395,8 @@ async function choose(id,el){
   } else {
     locked=true;                       // the wrong pal says its own sound, so the miss still teaches
     save.miss[target]=Math.min(5,(save.miss[target]||0)+1); persist();
-    say(id); flash(el,'no',420); el.classList.add('dim');
+    sfx.no(); badge(el,'bad'); flash(el,'no',420); el.classList.add('dim');
+    await wait(420); if(my!==run) return; say(id);
     await wait(1100); if(my!==run) return; say(target);
     locked=false;
   }
@@ -362,7 +424,7 @@ $('prev').addEventListener('click',()=>{ if(save.level>1){ sfx.tap(); start(save
 $('fwd').addEventListener('click',()=>{ if(save.level<save.max){ sfx.tap(); start(save.level+1); } });
 /* ---------- the adventure map ---------- */
 function showMap(){
-  run++; target=null;
+  run++; target=null; $('turn').classList.remove('on');
   $('win').classList.remove('on');
   $('subPals').textContent = save.max>LAST_NEW ? 'ALL PALS FOUND' : 'LEVEL '+Math.max(1,save.level|0)+' OF '+LAST_NEW;
   $('map').classList.add('on');
