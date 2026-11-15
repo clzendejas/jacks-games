@@ -67,6 +67,8 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 #turn svg{width:120px;height:120px}
 @keyframes turnin{from{transform:scale(.4);opacity:0}}
 #stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+#pals{transition:opacity .3s}
+#pals.out{opacity:0}
 #pals{display:grid;gap:calc(var(--ps)*.16);justify-content:center;align-content:center}
 
 /* a pal: a letter on a bright tile, with eyes peeking over the top */
@@ -391,15 +393,17 @@ async function meet(){
     }
   }
   els.forEach(e=>e.classList.remove('dim','spot'));
-  await wait(350); if(my!==run) return;
+  await wait(1100); if(my!==run) return;
   yourTurn();
 }
 async function yourTurn(){
   const my=run;
   show('hear',false); $('pals').innerHTML=''; cue('find');
   $('turnIcon').innerHTML=ICON.tap; $('turn').classList.add('on'); sfx.yes();
-  await wait(1300); if(my!==run) return;
-  $('turn').classList.remove('on'); ask();
+  await wait(1600); if(my!==run) return;
+  $('turn').classList.remove('on');
+  await wait(500); if(my!==run) return;
+  ask();
 }
 function chooseTarget(){
   const bag=[];
@@ -422,7 +426,7 @@ function ask(){
     const el=palEl(id); g.appendChild(el);
     el.addEventListener('click',()=>choose(id,el));
   });
-  setTimeout(()=>{ if(my===run) say(target); },500);
+  setTimeout(()=>{ if(my===run) say(target); },900);
 }
 async function choose(id,el){
   if (locked || el.classList.contains('dim')) return;
@@ -432,15 +436,17 @@ async function choose(id,el){
     [...$('pals').children].forEach(p=>{ if(p!==el) p.classList.add('dim'); });
     if (save.miss[target]>0) save.miss[target]--;
     score++; drawStars(score); persist();
-    await wait(650); if(my!==run) return; say(target);
-    await wait(900); if(my!==run) return;
-    score>=QUESTIONS ? win() : ask();
+    await wait(700); if(my!==run) return; say(target);          // only the right pal ever says its sound
+    await wait(1500); if(my!==run) return;
+    if (score>=QUESTIONS){ win(); return; }
+    show('hear',false); $('pals').classList.add('out');             // quiet beat before the next question
+    await wait(800); if(my!==run) return;
+    $('pals').classList.remove('out'); ask();
   } else {
-    locked=true;                       // the wrong pal says its own sound, so the miss still teaches
+    locked=true;                       // a wrong pal stays silent: X, shake, then the question repeats
     save.miss[target]=Math.min(5,(save.miss[target]||0)+1); persist();
     sfx.no(); badge(el,'bad'); flash(el,'no',420); el.classList.add('dim');
-    await wait(420); if(my!==run) return; say(id);
-    await wait(1100); if(my!==run) return; say(target);
+    await wait(1300); if(my!==run) return; say(target);
     locked=false;
   }
 }
