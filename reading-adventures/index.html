@@ -123,6 +123,24 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 @keyframes no{25%{transform:translateX(-7%)}75%{transform:translateX(7%)}}
 @keyframes idle{50%{transform:scale(1.04)}}
 
+#slideBox{width:100%;display:flex;flex-direction:column;align-items:center;gap:30px}
+#slideBox[hidden]{display:none}
+#word{display:flex;gap:calc(var(--ps)*.12);padding-top:calc(var(--ps)*.16);transition:gap .35s}
+#word.joined{gap:0}
+#word .pal{flex:none}
+#word .pal.wait{background:color-mix(in srgb, var(--c) 38%, #10263a);color:rgba(255,255,255,.5);box-shadow:none}
+#word .pal.wait .eye{opacity:.5}
+#track{position:relative;height:100px;touch-action:none;cursor:grab}
+#rail{position:absolute;left:40px;right:40px;top:50%;height:12px;margin-top:-6px;border-radius:6px;background:var(--quiet);overflow:hidden}
+#fill{height:100%;width:0;background:var(--sun)}
+#goal{position:absolute;right:0;top:50%;width:44px;height:44px;margin-top:-22px;color:var(--sun)}
+#goal svg{width:100%;height:100%}
+#token{position:absolute;left:0;top:10px;width:80px;height:80px;border-radius:50%;border:5px solid var(--sun);overflow:hidden;background:var(--night-2);box-shadow:0 5px 0 rgba(0,0,0,.28)}
+#token img{width:100%;height:100%;object-fit:cover;object-position:50% 0;display:block;pointer-events:none}
+#token.back{transition:left .3s}
+#token.no{animation:no .4s}
+#token.hint{animation:hint 1.3s infinite}
+@keyframes hint{50%{transform:translateX(30px)}}
 #bottom{display:flex;justify-content:center;align-items:center;min-height:92px}
 .round{
   width:84px;height:84px;border-radius:50%;background:var(--sun);color:var(--sun-ink);
@@ -173,7 +191,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 .conf{position:absolute;top:-20px;width:12px;height:18px;border-radius:3px;animation:conf linear forwards}
 @keyframes conf{to{transform:translateY(110vh) rotate(720deg)}}
 @media (prefers-reduced-motion: reduce){
-  .pal.idle,.round.pulse,#play,#win .jack,.eye,.bit{animation:none}
+  .pal.idle,.round.pulse,#play,#win .jack,.eye,.bit,#token.hint{animation:none}
   .bit{display:none}
   .conf{display:none}
 }
@@ -193,7 +211,11 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
   <div id="stars" aria-hidden="true"></div>
   <div id="lives" role="img" aria-label="Chances left"></div>
   <div id="cue" aria-live="polite"><span id="cueIcon"></span><span id="cueText"></span></div>
-  <div id="stage"><div id="pals"></div><div id="turn"><span id="turnIcon"></span><b>YOUR TURN!</b></div></div>
+  <div id="stage"><div id="pals"></div>
+    <div id="slideBox" hidden>
+      <div id="word"></div>
+      <div id="track"><div id="rail"><div id="fill"></div></div><span id="goal"></span><div id="token"><img src="jack.webp" alt=""></div></div>
+    </div><div id="turn"><span id="turnIcon"></span><b>YOUR TURN!</b></div></div>
   <div id="bottom">
     <button class="round" id="hear" aria-label="Hear the sound again" hidden></button>
     <button class="round pulse" id="next" aria-label="Next" hidden></button>
@@ -219,10 +241,10 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
     <span><span class="name">SOUND PALS</span><span class="sub" id="subPals">LEVEL 1</span></span>
     <span class="end"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg></span>
   </button>
-  <button class="stop locked" id="goSlide" aria-disabled="true">
+  <button class="stop locked" id="goSlide" style="--c:#ff9a1f">
     <span class="art" id="artSlide"></span>
-    <span><span class="name">WORD SLIDE</span><span class="sub">COMING SOON</span></span>
-    <span class="end lock"></span>
+    <span><span class="name">WORD SLIDE</span><span class="sub" id="subSlide"></span></span>
+    <span class="end" id="endSlide"></span>
   </button>
   <button class="stop locked" id="goBuild" aria-disabled="true">
     <span class="art" id="artBuild"></span>
@@ -250,8 +272,15 @@ const QUESTIONS=8;
 const color=id=>COLORS[ORDER.indexOf(id)%COLORS.length];
 
 // one saved record for the whole game, with a section per adventure
-let all={pals:{level:1,max:1,miss:{}}};
-try{ const s=JSON.parse(localStorage.getItem('reading-adventures')||'{}'); if (s && s.pals) Object.assign(all.pals, s.pals); }catch(e){}
+let all={pals:{level:1,max:1,miss:{}}, slide:{level:1,max:1}, unlock:{slide:false}};
+try{
+  const s=JSON.parse(localStorage.getItem('reading-adventures')||'{}');
+  if (s && s.pals) Object.assign(all.pals, s.pals);
+  if (s && s.slide) Object.assign(all.slide, s.slide);
+  if (s && s.unlock) Object.assign(all.unlock, s.unlock);
+}catch(e){}
+let mode='pals';                     // which adventure is on screen
+const cur=()=>mode==='slide'?all.slide:all.pals;
 const save=all.pals;                 // Sound Pals progress
 if (!save.miss || typeof save.miss!=='object') save.miss={};
 function persist(){ try{ localStorage.setItem('reading-adventures', JSON.stringify(all)); }catch(e){} }
@@ -323,10 +352,11 @@ function palEl(id, tag){
 }
 function flash(el,cls,ms){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(()=>el.classList.remove(cls),ms); }
 const starSvg='<svg viewBox="0 0 100 100"><path fill="currentColor" d="M50 6l13 28 31 4-23 21 6 31-27-15-27 15 6-31L6 38l31-4z"/></svg>';
-function drawStars(n){ $('stars').innerHTML=starSvg.repeat(QUESTIONS); [...$('stars').children].forEach((s,i)=>s.classList.toggle('on',i<n)); }
+function drawStars(n,total){ $('stars').innerHTML=starSvg.repeat(total||QUESTIONS); [...$('stars').children].forEach((s,i)=>s.classList.toggle('on',i<n)); }
 function header(){
-  $('lvlName').textContent=save.level>=PRACTICE?'PRACTICE':'LEVEL '+save.level;
-  $('prev').disabled=save.level<=1; $('fwd').disabled=save.level>=save.max;
+  const s=cur();
+  $('lvlName').textContent=(mode==='pals' && s.level>=PRACTICE)?'PRACTICE':'LEVEL '+s.level;
+  $('prev').disabled=s.level<=1; $('fwd').disabled=s.level>=s.max;
 }
 function sizeGrid(count){
   const st=$('stage'), cols=count<=2?count:2, rows=Math.ceil(count/cols);
@@ -341,6 +371,7 @@ let run=0, known=[], fresh=[], target=null, score=0, lastTarget=null, locked=fal
 const show=(id,on)=>{ $(id).hidden=!on; };
 
 function start(L){
+  mode='pals'; $('slideBox').hidden=true; $('pals').style.display='';
   L=Math.max(1,Math.min(PRACTICE,L|0));
   run++; save.level=L; if(L>save.max) save.max=L; save.max=Math.min(save.max,PRACTICE); persist(); header();
   $('win').classList.remove('on'); $('fail').classList.remove('on'); $('turn').classList.remove('on'); $('pals').classList.remove('out');
@@ -353,13 +384,14 @@ function start(L){
 const ICON={
   listen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>',
   tap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="12" cy="12" r="7"/><path d="M12 1.5v2M12 20.5v2M1.5 12h2M20.5 12h2"/></svg>',
+  slide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h16M13 6l6 6-6 6"/></svg>',
   ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   bad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>'
 };
 function cue(kind){
   const c=$('cue'); c.className=kind;
-  $('cueIcon').innerHTML = kind==='listen'?ICON.listen:ICON.tap;
-  $('cueText').textContent = kind==='listen'?'LISTEN':'TAP THE PAL YOU HEAR';
+  $('cueIcon').innerHTML = kind==='listen'?ICON.listen:kind==='slide'?ICON.slide:ICON.tap;
+  $('cueText').textContent = kind==='listen'?'LISTEN':kind==='slide'?'SLIDE TO THE STAR':'TAP THE PAL YOU HEAR';
   flash(c,'pop',520);
 }
 function badge(el,kind){ const b=document.createElement('span'); b.className='badge '+kind; b.innerHTML=ICON[kind]; el.appendChild(b); }
@@ -470,7 +502,7 @@ async function choose(id,el){
 }
 function win(){
   show('hear',false);
-  if (save.level+1>save.max){ save.max=Math.min(PRACTICE,save.level+1); persist(); }
+  const s=cur(); if (s.level+1>s.max){ s.max=s.level+1; if(mode==='pals') s.max=Math.min(s.max,PRACTICE); persist(); }
   sfx.win();
   const w=$('win'); w.querySelectorAll('.conf').forEach(c=>c.remove());
   for (let n=0;n<40;n++){
@@ -482,6 +514,91 @@ function win(){
   w.classList.add('on');
 }
 
+/* ---------- Word Slide: drag Jack under a word; each letter says its sound as he passes ---------- */
+const WORDS=[
+  'at an in it sat sit sip tap tip tin pin pan pat pit nap nip ant',
+  'on mat map man mad mop dad dog dig dot got cat cap cot cod kid kit top pot sad pig',
+  'pen pet hen red bed ten net sun cup mud bus bug hug run rug hat hot hop bat big bag rat',
+  'fan fox fun fin leg log lip jam jet jug van vet web wet win box six yes yum zip zap',
+  'ship shop fish dish chip chin much thin bath moth ring king sing quiz quit'
+].map(s=>s.split(' '));
+const SLIDE_WORDS=6, TOKEN=80;
+const HAS_WORD_AUDIO=false;          // whole-word recordings are not in yet; until then the sounds replay quickly as the blend
+function letters(w){ const out=[]; for(let i=0;i<w.length;){ const two=w.slice(i,i+2); if(['sh','ch','th','ng','qu'].includes(two)){out.push(two);i+=2;} else {out.push(w[i]);i++;} } return out; }
+function chooseWords(L){
+  const si=Math.min(WORDS.length-1, Math.floor((L-1)/2));
+  const main=shuffle(WORDS[si].slice()).slice(0, si?SLIDE_WORDS-1:SLIDE_WORDS);
+  if (si) main.push(pick(WORDS[Math.floor(Math.random()*si)]));
+  return main.sort((a,b)=>a.length-b.length);
+}
+let sWords=[], wi=0, toks=[], tiles=[], lastZone=-1, dragging=false, slideDone=false;
+function startSlide(L){
+  mode='slide'; run++;
+  const s=all.slide; s.level=L; if(L>s.max) s.max=L; persist(); header();
+  $('win').classList.remove('on'); $('turn').classList.remove('on');
+  $('pals').style.display='none'; $('pals').innerHTML=''; $('slideBox').hidden=false;
+  show('hear',false); show('next',false); target=null; $('lives').hidden=true; $('fail').classList.remove('on');
+  score=0; drawStars(0,SLIDE_WORDS); sWords=chooseWords(L); wi=0; cue('slide'); nextWord();
+}
+function nextWord(){
+  toks=letters(sWords[wi]);
+  const w=$('word'); w.classList.remove('joined'); w.innerHTML='';
+  const ps=Math.max(60, Math.min(130, ($('stage').clientWidth-20)/(toks.length*1.12)));
+  w.style.setProperty('--ps',ps+'px');
+  tiles=toks.map(t=>{ const el=palEl(t,'div'); el.classList.add('wait'); w.appendChild(el); return el; });
+  $('track').style.width=Math.max(w.offsetWidth, 260)+'px';
+  resetSlide(false);
+}
+function resetSlide(animate){
+  const tk=$('token'); tk.classList.toggle('back',!!animate); tk.style.left='0px'; tk.classList.add('hint');
+  $('fill').style.width='0'; lastZone=-1; slideDone=false; dragging=false;
+  tiles.forEach(t=>{ t.classList.add('wait'); t.classList.remove('spot'); });
+}
+function slideMove(e){
+  const r=$('track').getBoundingClientRect(), max=r.width-TOKEN;
+  const x=Math.max(0, Math.min(max, e.clientX-r.left-TOKEN/2));
+  $('token').style.left=x+'px'; $('fill').style.width=Math.max(0,x-TOKEN/2+40)+'px';
+  const z=Math.min(toks.length-1, Math.floor((x+TOKEN/2)/(r.width/toks.length)));
+  if (z>lastZone){
+    for (let k=lastZone+1;k<=z;k++){
+      const id=toks[k], d=(k-lastZone-1)*140;
+      setTimeout(()=>say(id), d);
+      tiles[k].classList.remove('wait');
+    }
+    tiles.forEach((t,k)=>t.classList.toggle('spot',k===z));
+    lastZone=z;
+  }
+  if (x>=max-6 && lastZone===toks.length-1) slideEnd();
+}
+async function slideEnd(){
+  const my=run; slideDone=true; dragging=false;
+  tiles.forEach(t=>t.classList.remove('wait','spot'));
+  await wait(450); if(my!==run) return;
+  $('word').classList.add('joined'); sfx.yes();
+  await wait(500); if(my!==run) return;
+  if (HAS_WORD_AUDIO) say('word-'+sWords[wi]);
+  else toks.forEach((id,k)=>setTimeout(()=>{ if(my===run) say(id); }, k*230));
+  burst(tiles[Math.floor(tiles.length/2)]); badge(tiles[tiles.length-1],'ok');
+  score++; drawStars(score,SLIDE_WORDS);
+  await wait(1700); if(my!==run) return;
+  wi++; wi>=SLIDE_WORDS ? win() : nextWord();
+}
+(function(){
+  const tr=$('track');
+  tr.addEventListener('pointerdown',e=>{
+    if (slideDone) return; unlock();
+    const tk=$('token').getBoundingClientRect();
+    if (Math.abs(e.clientX-(tk.left+tk.width/2))>70){ flash($('token'),'no',420); return; }   // must start on Jack
+    dragging=true; try{ tr.setPointerCapture(e.pointerId); }catch(err){}
+    $('token').classList.remove('hint','back'); slideMove(e);
+  });
+  tr.addEventListener('pointermove',e=>{ if(dragging && !slideDone) slideMove(e); });
+  const up=()=>{ if(dragging && !slideDone) resetSlide(true); };
+  tr.addEventListener('pointerup',up); tr.addEventListener('pointercancel',up);
+  $('goal').innerHTML=starSvg;
+})();
+const go=L=>mode==='slide'?startSlide(L):start(L);
+
 /* ---------- buttons ---------- */
 $('hear').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>';
 $('next').innerHTML='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg>';
@@ -492,25 +609,39 @@ $('hear').addEventListener('click',()=>{
   sfx.no(); flash($('hear'),'no',420); strike();           // out of replays: pressing again costs a heart
 });
 $('retry').addEventListener('click',()=>{ sfx.tap(); start(save.level); });
-$('again').addEventListener('click',()=>{ sfx.tap(); start(save.level+1); });
-$('prev').addEventListener('click',()=>{ if(save.level>1){ sfx.tap(); start(save.level-1); } });
-$('fwd').addEventListener('click',()=>{ if(save.level<save.max){ sfx.tap(); start(save.level+1); } });
+$('again').addEventListener('click',()=>{ sfx.tap(); go(cur().level+1); });
+$('prev').addEventListener('click',()=>{ if(cur().level>1){ sfx.tap(); go(cur().level-1); } });
+$('fwd').addEventListener('click',()=>{ if(cur().level<cur().max){ sfx.tap(); go(cur().level+1); } });
 /* ---------- the adventure map ---------- */
+const lockSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor" stroke="none"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
 function showMap(){
   run++; target=null; $('turn').classList.remove('on'); $('fail').classList.remove('on');
   $('win').classList.remove('on');
   $('subPals').textContent = save.level>=PRACTICE ? 'PRACTICE' : 'LEVEL '+Math.max(1,save.level|0)+' OF '+LAST_NEW;
+  const open=slideOpen(), b=$('goSlide');
+  b.classList.toggle('locked',!open);
+  $('subSlide').textContent = open ? 'LEVEL '+Math.max(1,all.slide.level|0) : 'FINISH 3 SOUND PALS LEVELS';
+  $('endSlide').innerHTML = open ? '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg>' : lockSvg;
   $('map').classList.add('on');
 }
+const slideOpen=()=>true;   // open from the start for now (was: after three Sound Pals levels)
 $('play').addEventListener('click',()=>{ unlock(); sfx.yes(); $('home').classList.remove('on'); showMap(); });
 $('goPals').addEventListener('click',()=>{ unlock(); sfx.tap(); $('map').classList.remove('on'); start(Math.max(1,save.level|0)); });
-['goSlide','goBuild'].forEach(id=>$(id).addEventListener('click',()=>{ tone(200,150,.14,.10,0,'triangle'); flash($(id),'no',420); }));
+$('goBuild').addEventListener('click',()=>{ sfx.no(); flash($('goBuild'),'no',420); });
+$('goSlide').addEventListener('click',()=>{
+  if (!slideOpen()){ sfx.no(); flash($('goSlide'),'no',420); return; }
+  unlock(); sfx.tap(); $('map').classList.remove('on'); startSlide(Math.max(1,all.slide.level|0));
+});
+// grown-up shortcut: hold a locked Word Slide for two seconds to open it early
+(function(){ let t=null; const b=$('goSlide');
+  b.addEventListener('pointerdown',()=>{ if(slideOpen()) return; t=setTimeout(()=>{ all.unlock.slide=true; persist(); sfx.yes(); showMap(); },2000); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
+})();
 $('toMap').addEventListener('click',()=>{ sfx.tap(); showMap(); });
 $('toMap').innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>';
-const lockSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor" stroke="none"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
 document.querySelectorAll('.lock').forEach(e=>e.innerHTML=lockSvg);
 $('artPals').appendChild(palEl('s','div')); $('artSlide').appendChild(palEl('a','div')); $('artBuild').appendChild(palEl('t','div'));
-window.addEventListener('resize',()=>{ const n=$('pals').children.length; if(n>1) sizeGrid(n); });
+window.addEventListener('resize',()=>{ const n=$('pals').children.length; if(mode==='pals' && n>1) sizeGrid(n); });
 ['s','a','t'].forEach(id=>$('trio').appendChild(palEl(id,'div')));
 header(); drawStars(0);
 try{ if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
