@@ -51,6 +51,19 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 #top .arrow{width:44px;height:46px;font-size:30px;font-weight:800;line-height:1;opacity:.9}
 #top .arrow:disabled{opacity:.2}
 #lvlName{font-size:22px;font-weight:800;letter-spacing:.06em;min-width:118px;text-align:center}
+#lives{display:flex;justify-content:center;gap:8px;min-height:26px}
+#lives[hidden]{display:none}
+#lives svg{width:26px;height:26px;color:#ff6fb5;transition:color .2s, transform .2s}
+#lives svg.gone{color:var(--quiet);transform:scale(.8)}
+#lives.hit{animation:no .4s}
+#fail{background:rgba(8,22,34,.86)}
+.round{position:relative}
+.pips{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:5px}
+.pips i{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.22}
+.pips i.on{opacity:1}
+#hear svg{transform:translateY(-5px)}
+#hear.spent{background:var(--quiet);color:rgba(255,255,255,.55);box-shadow:none}
+#hear.no{animation:no .4s}
 #stars{display:flex;justify-content:center;gap:6px;min-height:30px}
 #stars svg{width:28px;height:28px;color:var(--quiet);transition:color .2s, transform .3s}
 #stars svg.on{color:var(--sun);transform:scale(1.15)}
@@ -196,6 +209,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
     <span class="small ghost"></span>
   </div>
   <div id="stars" aria-hidden="true"></div>
+  <div id="lives" role="img" aria-label="Chances left"></div>
   <div id="cue" aria-live="polite"><span id="cueIcon"></span><span id="cueText"></span></div>
   <div id="stage"><div id="pals"></div>
     <div id="slideBox" hidden>
@@ -203,9 +217,15 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
       <div id="track"><div id="rail"><div id="fill"></div></div><span id="goal"></span><div id="token"><img src="jack.webp" alt=""></div></div>
     </div><div id="turn"><span id="turnIcon"></span><b>YOUR TURN!</b></div></div>
   <div id="bottom">
-    <button class="round pulse" id="hear" aria-label="Hear the sound again" hidden></button>
+    <button class="round" id="hear" aria-label="Hear the sound again" hidden></button>
     <button class="round pulse" id="next" aria-label="Next" hidden></button>
   </div>
+</div>
+
+<div class="screen" id="fail">
+  <div class="jack"><img src="jack.webp" alt="Jack"></div>
+  <h1>LET&rsquo;S TRY<b>AGAIN</b></h1>
+  <button class="go" id="retry" aria-label="Start this level again"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.6-5.9"/><path d="M20 3v5h-5"/></svg></button>
 </div>
 
 <div class="screen" id="win">
@@ -246,6 +266,8 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 const ORDER=['s','a','t','p','i','n','m','d','g','o','c','k','e','u','r','h','b','f','l','j','v','w','x','y','z','qu','sh','ch','th','ng'];
 const COLORS=['#2f9bff','#ff9a1f','#ffe04a','#ff6fb5','#17d1c0','#b48cff','#f6f1e4','#8fd14f'];
 const LAST_NEW=ORDER.length/2;      // level 15 introduces the last pair
+const PRACTICE=LAST_NEW+1;          // after that, one endless practice level cycles through every pal
+const MAX_STRIKES=3, MAX_HEARS=3;   // three wrong taps restart the level; three free replays per question
 const QUESTIONS=8;
 const color=id=>COLORS[ORDER.indexOf(id)%COLORS.length];
 
@@ -316,6 +338,7 @@ const sfx={
   tap:()=>tone(520,620,.07,.10),
   yes:()=>{tone(660,660,.12,.13);tone(990,990,.2,.13,.11)},
   no:()=>tone(210,150,.18,.13,0,'triangle'),
+  fail:()=>{tone(392,392,.22,.13,0,'triangle');tone(330,330,.22,.13,.2,'triangle');tone(262,262,.4,.13,.4,'triangle')},
   win:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,f,.22,.14,i*.11))
 };
 
@@ -332,7 +355,7 @@ const starSvg='<svg viewBox="0 0 100 100"><path fill="currentColor" d="M50 6l13 
 function drawStars(n,total){ $('stars').innerHTML=starSvg.repeat(total||QUESTIONS); [...$('stars').children].forEach((s,i)=>s.classList.toggle('on',i<n)); }
 function header(){
   const s=cur();
-  $('lvlName').textContent='LEVEL '+s.level;
+  $('lvlName').textContent=(mode==='pals' && s.level>=PRACTICE)?'PRACTICE':'LEVEL '+s.level;
   $('prev').disabled=s.level<=1; $('fwd').disabled=s.level>=s.max;
 }
 function sizeGrid(count){
@@ -344,13 +367,15 @@ function sizeGrid(count){
 }
 
 /* ---------- a level: meet the new pals, then find pals by their sound ---------- */
-let run=0, known=[], fresh=[], target=null, score=0, lastTarget=null, locked=false;
+let run=0, known=[], fresh=[], target=null, score=0, lastTarget=null, locked=false, strikes=0, hears=0;
 const show=(id,on)=>{ $(id).hidden=!on; };
 
 function start(L){
   mode='pals'; $('slideBox').hidden=true; $('pals').style.display='';
-  run++; save.level=L; if(L>save.max) save.max=L; persist(); header();
-  $('win').classList.remove('on'); $('turn').classList.remove('on');
+  L=Math.max(1,Math.min(PRACTICE,L|0));
+  run++; save.level=L; if(L>save.max) save.max=L; save.max=Math.min(save.max,PRACTICE); persist(); header();
+  $('win').classList.remove('on'); $('fail').classList.remove('on'); $('turn').classList.remove('on'); $('pals').classList.remove('out');
+  strikes=0; $('lives').hidden=false; drawLives();
   fresh = L<=LAST_NEW ? ORDER.slice((L-1)*2, L*2) : [];
   known = ORDER.slice(0, Math.min(ORDER.length, L*2));
   score=0; lastTarget=null; drawStars(0);
@@ -405,7 +430,31 @@ async function yourTurn(){
   await wait(500); if(my!==run) return;
   ask();
 }
+const heart='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.300 2.800 4.500 6.500 4.500c2 0 3.600 1.100 5.500 3.300 1.900-2.200 3.500-3.300 5.500-3.300 3.700 0 5.600 3.800 4.100 7.200C19.500 16.400 12 21 12 21z"/></svg>';
+function drawLives(){ $('lives').innerHTML=heart.repeat(MAX_STRIKES); [...$('lives').children].forEach((s,i)=>s.classList.toggle('gone',i>=MAX_STRIKES-strikes)); }
+function drawHear(){
+  const left=MAX_HEARS-hears, b=$('hear');
+  b.classList.toggle('spent',left<=0);
+  b.querySelector('.pips').innerHTML=Array.from({length:MAX_HEARS},(_,i)=>'<i class="'+(i<left?'on':'')+'"></i>').join('');
+}
+// a strike costs one heart; the third one ends the level. Returns true when the level is over.
+function strike(){
+  strikes++; drawLives(); flash($('lives'),'hit',420);
+  if (strikes<MAX_STRIKES) return false;
+  run++; locked=true; show('hear',false);
+  setTimeout(()=>{ sfx.fail(); $('fail').classList.add('on'); },700);
+  return true;
+}
+// practice: every pal comes round once before any repeats, the ones he has missed first
+function fromQueue(){
+  if (!Array.isArray(save.queue) || !save.queue.length){
+    save.queue=shuffle(ORDER.filter(id=>save.miss[id]>0)).concat(shuffle(ORDER.filter(id=>!(save.miss[id]>0))));
+  }
+  let i=save.queue.findIndex(id=>id!==lastTarget); if (i<0) i=0;
+  const id=save.queue.splice(i,1)[0]; persist(); return id;
+}
 function chooseTarget(){
+  if (save.level>=PRACTICE) return fromQueue();
   const bag=[];
   known.forEach(id=>{
     if (id===lastTarget && known.length>1) return;
@@ -417,7 +466,7 @@ function chooseTarget(){
 function ask(){
   const my=run; locked=false;
   show('next',false); show('hear',true);
-  target=chooseTarget(); lastTarget=target;
+  target=chooseTarget(); lastTarget=target; hears=0; drawHear();
   const n=Math.min(known.length, save.level===1?2:save.level===2?3:4);
   const others=shuffle(known.filter(id=>id!==target)).slice(0,n-1);
   const opts=shuffle([target,...others]);
@@ -446,13 +495,14 @@ async function choose(id,el){
     locked=true;                       // a wrong pal stays silent: X, shake, then the question repeats
     save.miss[target]=Math.min(5,(save.miss[target]||0)+1); persist();
     sfx.no(); badge(el,'bad'); flash(el,'no',420); el.classList.add('dim');
+    if (strike()) return;
     await wait(1300); if(my!==run) return; say(target);
     locked=false;
   }
 }
 function win(){
   show('hear',false);
-  const s=cur(); if (s.level+1>s.max){ s.max=s.level+1; persist(); }
+  const s=cur(); if (s.level+1>s.max){ s.max=s.level+1; if(mode==='pals') s.max=Math.min(s.max,PRACTICE); persist(); }
   sfx.win();
   const w=$('win'); w.querySelectorAll('.conf').forEach(c=>c.remove());
   for (let n=0;n<40;n++){
@@ -487,7 +537,7 @@ function startSlide(L){
   const s=all.slide; s.level=L; if(L>s.max) s.max=L; persist(); header();
   $('win').classList.remove('on'); $('turn').classList.remove('on');
   $('pals').style.display='none'; $('pals').innerHTML=''; $('slideBox').hidden=false;
-  show('hear',false); show('next',false); target=null;
+  show('hear',false); show('next',false); target=null; $('lives').hidden=true; $('fail').classList.remove('on');
   score=0; drawStars(0,SLIDE_WORDS); sWords=chooseWords(L); wi=0; cue('slide'); nextWord();
 }
 function nextWord(){
@@ -552,16 +602,22 @@ const go=L=>mode==='slide'?startSlide(L):start(L);
 /* ---------- buttons ---------- */
 $('hear').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>';
 $('next').innerHTML='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg>';
-$('hear').addEventListener('click',()=>{ if(target) say(target); });
+$('hear').insertAdjacentHTML('beforeend','<span class="pips"></span>');
+$('hear').addEventListener('click',()=>{
+  if (!target || locked) return;
+  if (hears<MAX_HEARS){ hears++; say(target); drawHear(); return; }
+  sfx.no(); flash($('hear'),'no',420); strike();           // out of replays: pressing again costs a heart
+});
+$('retry').addEventListener('click',()=>{ sfx.tap(); start(save.level); });
 $('again').addEventListener('click',()=>{ sfx.tap(); go(cur().level+1); });
 $('prev').addEventListener('click',()=>{ if(cur().level>1){ sfx.tap(); go(cur().level-1); } });
 $('fwd').addEventListener('click',()=>{ if(cur().level<cur().max){ sfx.tap(); go(cur().level+1); } });
 /* ---------- the adventure map ---------- */
 const lockSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor" stroke="none"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
 function showMap(){
-  run++; target=null; $('turn').classList.remove('on');
+  run++; target=null; $('turn').classList.remove('on'); $('fail').classList.remove('on');
   $('win').classList.remove('on');
-  $('subPals').textContent = save.max>LAST_NEW ? 'ALL PALS FOUND' : 'LEVEL '+Math.max(1,save.level|0)+' OF '+LAST_NEW;
+  $('subPals').textContent = save.level>=PRACTICE ? 'PRACTICE' : 'LEVEL '+Math.max(1,save.level|0)+' OF '+LAST_NEW;
   const open=slideOpen(), b=$('goSlide');
   b.classList.toggle('locked',!open);
   $('subSlide').textContent = open ? 'LEVEL '+Math.max(1,all.slide.level|0) : 'FINISH 3 SOUND PALS LEVELS';
