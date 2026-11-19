@@ -10,6 +10,7 @@ that also installs as its own app and works offline.
 |---|---|---|
 | Rainbow Bottles | [Play](https://clzendejas.github.io/jacks-games/rainbow-bottles/) | Pour colors between bottles until every bottle holds one color. |
 | Jack's Reading Adventures | [Play](https://clzendejas.github.io/jacks-games/reading-adventures/) | Learn to read in small steps. First adventure: Sound Pals, where letter pals say their sounds. Word Slide (blending) and Word Builder (spelling) are coming. |
+| Jack's World | [Play](https://clzendejas.github.io/jacks-games/jacks-world/) | A blocky 3D town builder. Paint the land by number, then build one thing a day: something needed, something fun, or something beautiful. |
 
 ## Install on a tablet or phone
 
@@ -32,7 +33,8 @@ for offline play. There is no build step and there are no dependencies.
 
 The letter sounds in Jack's Reading Adventures are a parent's own recordings,
 shared under the same MIT license as the code. The letters are set in Andika
-(SIL Open Font License), a typeface made for early readers.
+(SIL Open Font License), a typeface made for early readers. Jack's World
+uses three.js (MIT) for its 3D scene.
 
 ## License
 
