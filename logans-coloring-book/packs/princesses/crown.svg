@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Crown" data-palette="1:#ffe3f1 2:#ffd23f 3:#ffc533 4:#a97bff 5:#ff6fae 6:#f2545b 7:#ff9a3d 8:#5b8cff 9:#3fd0c0" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<path d="M80 60 L87.4 82.6 L110 90 L87.4 97.4 L80 120 L72.6 97.4 L50 90 L72.6 82.6Z" data-n="2"/>
+<path d="M525 74 L533.9 101.1 L561 110 L533.9 118.9 L525 146 L516.1 118.9 L489 110 L516.1 101.1Z" data-n="2"/>
+<path d="M300 38 L305.4 54.6 L322 60 L305.4 65.4 L300 82 L294.6 65.4 L278 60 L294.6 54.6Z" data-n="2"/>
+<circle cx="78" cy="515" r="20" data-n="3"/>
+<circle cx="522" cy="515" r="20" data-n="3"/>
+<path d="M90 468 Q300 432 510 468 Q545 515 510 562 Q300 592 90 562 Q55 515 90 468Z" data-n="4"/>
+<path d="M132 440 L98 205 L200 305 L300 150 L400 305 L502 205 L468 440Z" data-n="3"/>
+<circle cx="98" cy="192" r="24" data-n="5"/>
+<circle cx="502" cy="192" r="24" data-n="5"/>
+<circle cx="300" cy="136" r="28" data-n="5"/>
+<path d="M300 332.3 C242.2 296.6 271.1 257.5 300 284.7 C328.9 257.5 357.8 296.6 300 332.3Z" data-n="6"/>
+<rect x="122" y="392" width="356" height="66" rx="16" data-n="7"/>
+<circle cx="300" cy="425" r="21" data-n="8"/>
+<path d="M229 425 L205 449 L181 425 L205 401Z" data-n="9"/>
+<path d="M419 425 L395 449 L371 425 L395 401Z" data-n="9"/>
+</svg>

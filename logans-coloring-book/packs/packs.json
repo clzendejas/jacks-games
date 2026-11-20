@@ -1,0 +1,117 @@
+[
+ {
+  "id": "zoo",
+  "name": "Zoo animals",
+  "color": "#86d95b",
+  "pages": [
+   {
+    "id": "lion",
+    "name": "Lion"
+   },
+   {
+    "id": "monkey",
+    "name": "Monkey"
+   },
+   {
+    "id": "elephant",
+    "name": "Elephant"
+   },
+   {
+    "id": "giraffe",
+    "name": "Giraffe"
+   }
+  ]
+ },
+ {
+  "id": "princesses",
+  "name": "Princesses",
+  "color": "#ff6fae",
+  "pages": [
+   {
+    "id": "princess",
+    "name": "Princess"
+   },
+   {
+    "id": "castle",
+    "name": "Castle"
+   },
+   {
+    "id": "crown",
+    "name": "Crown"
+   },
+   {
+    "id": "carriage",
+    "name": "Carriage"
+   }
+  ]
+ },
+ {
+  "id": "unicorns",
+  "name": "Unicorns",
+  "color": "#a97bff",
+  "pages": [
+   {
+    "id": "unicorn",
+    "name": "Unicorn"
+   },
+   {
+    "id": "flower-unicorn",
+    "name": "Flower unicorn"
+   },
+   {
+    "id": "rainbow",
+    "name": "Rainbow"
+   },
+   {
+    "id": "flying-unicorn",
+    "name": "Flying unicorn"
+   }
+  ]
+ },
+ {
+  "id": "sea",
+  "name": "Under the sea",
+  "color": "#3fd0c0",
+  "pages": [
+   {
+    "id": "fish",
+    "name": "Fish"
+   },
+   {
+    "id": "octopus",
+    "name": "Octopus"
+   },
+   {
+    "id": "turtle",
+    "name": "Turtle"
+   },
+   {
+    "id": "whale",
+    "name": "Whale"
+   }
+  ]
+ },
+ {
+  "id": "treats",
+  "name": "Yummy treats",
+  "color": "#ff9a3d",
+  "pages": [
+   {
+    "id": "cupcake",
+    "name": "Cupcake"
+   },
+   {
+    "id": "ice-cream",
+    "name": "Ice cream"
+   },
+   {
+    "id": "donut",
+    "name": "Donut"
+   },
+   {
+    "id": "cake",
+    "name": "Birthday cake"
+   }
+  ]
+ }
+]

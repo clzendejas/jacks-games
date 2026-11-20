@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Whale" data-palette="1:#9ad8ff 2:#ffd23f 3:#e4f3ff 4:#7fd0f2 5:#5b8cff 6:#ffe9c4 7:#3f7fd6 8:#ffa3c8" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<circle cx="505" cy="85" r="46" data-n="2"/>
+<path d="M391.7 85.4 A21.2 21.2 0 0 1 358.7 104 A30.6 30.6 0 0 1 304.1 104.6 A22.1 22.1 0 0 1 268.9 86.6 A14.2 14.2 0 0 1 279.8 63.7 A27.9 27.9 0 0 1 328.5 53 A28.4 28.4 0 0 1 378.3 62.7 A14.8 14.8 0 0 1 391.7 85.4Z" data-n="3"/>
+<path d="M-10 345 Q45 322 100 345 T210 345 T320 345 T430 345 T540 345 T650 345 V610 H-10Z" data-n="4"/>
+<ellipse cx="112" cy="222" rx="13" ry="30" data-n="3" transform="rotate(-24 112 222)"/>
+<ellipse cx="150" cy="204" rx="13" ry="30" data-n="3"/>
+<ellipse cx="188" cy="222" rx="13" ry="30" data-n="3" transform="rotate(24 188 222)"/>
+<path d="M150 262 V285" class="ln" fill="none" stroke-width="6"/>
+<ellipse cx="486" cy="262" rx="48" ry="23" data-n="5" transform="rotate(35 486 262)"/>
+<ellipse cx="558" cy="262" rx="48" ry="23" data-n="5" transform="rotate(-35 558 262)"/>
+<path d="M450.6 428.3 L453.3 425 L457.3 420.9 L462.8 415.9 L469.2 410.3 L476.2 404.1 L483.5 397.4 L490.8 390.4 L497.9 383.1 L504.6 375.4 L510.5 367.2 L515.5 358.7 L519.5 349.9 L522.9 341.1 L525.7 332.4 L528 323.9 L530 316 L531.5 308.7 L532.7 302.3 L533.5 297.1 L534 293.1 A13 13 0 0 0 510 282.9 L510 282.9 L507.3 286.7 L504.2 291.6 L500.9 297.3 L497.4 303.6 L493.7 310.1 L489.8 316.6 L485.7 322.8 L481.5 328.5 L477.4 333.3 L473.5 336.8 L469 340 L463.4 343.7 L456.8 347.7 L449.6 351.9 L442.1 355.9 L434.6 359.8 L427.3 363.3 L420.6 366.6 L414.4 369.5 L409.4 371.7 A35 35 0 0 0 450.6 428.3Z" data-n="5"/>
+<ellipse cx="275" cy="412" rx="205" ry="118" data-n="5"/>
+<path d="M82 440 Q275 482 470 436 Q420 530 275 530 Q130 530 82 440Z" data-n="6"/>
+<ellipse cx="318" cy="462" rx="54" ry="22" data-n="7" transform="rotate(30 318 462)"/>
+<circle cx="150" cy="392" r="13" data-fix="1" fill="#33263f" stroke="none"/>
+<circle cx="154.2" cy="387.3" r="4.4" data-fix="1" fill="#ffffff" stroke="none"/>
+<circle cx="172" cy="428" r="13" data-n="8"/>
+<path d="M96 422 Q128 446 160 438" class="ln" fill="none" stroke-width="5"/>
+<path d="M-10 545 Q45 522 100 545 T210 545 T320 545 T430 545 T540 545 T650 545 V610 H-10Z" data-n="7"/>
+</svg>

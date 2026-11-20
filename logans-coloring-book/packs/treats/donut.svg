@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Donut" data-palette="1:#bfe8ff 2:#ffe9c4 3:#e9b16c 4:#ff6fae 5:#ffd23f 6:#5b8cff 7:#a97bff" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<ellipse cx="300" cy="305" rx="285" ry="270" data-n="2"/>
+<circle cx="300" cy="300" r="200" data-n="3"/>
+<path d="M463.2 316.4 A57.8 57.8 0 0 1 428.4 402 A57.8 57.8 0 0 1 352.9 455.2 A57.8 57.8 0 0 1 260.6 459.2 A57.8 57.8 0 0 1 180.8 412.6 A57.8 57.8 0 0 1 138.8 330.3 A57.8 57.8 0 0 1 148 238.3 A57.8 57.8 0 0 1 205.5 166 A57.8 57.8 0 0 1 293 136.2 A57.8 57.8 0 0 1 382.7 158.4 A57.8 57.8 0 0 1 446.1 225.6 A57.8 57.8 0 0 1 463.2 316.4Z" data-n="4"/>
+<circle cx="300" cy="300" r="74" data-n="3"/>
+<circle cx="300" cy="300" r="52" data-n="2"/>
+<rect x="391.6" y="312.9" width="48" height="21" rx="10.5" data-n="5"/>
+<rect x="349.5" y="381.8" width="48" height="21" rx="10.5" data-n="6" transform="rotate(67 373.5 392.3)"/>
+<rect x="273" y="407.5" width="48" height="21" rx="10.5" data-n="7" transform="rotate(134 297 418)"/>
+<rect x="197.9" y="377.9" width="48" height="21" rx="10.5" data-n="5" transform="rotate(21 221.9 388.4)"/>
+<rect x="159.3" y="307" width="48" height="21" rx="10.5" data-n="6" transform="rotate(88 183.3 317.5)"/>
+<rect x="175.3" y="227.9" width="48" height="21" rx="10.5" data-n="7" transform="rotate(155 199.3 238.4)"/>
+<rect x="238.5" y="177.6" width="48" height="21" rx="10.5" data-n="5" transform="rotate(42 262.5 188.1)"/>
+<rect x="319.2" y="179.7" width="48" height="21" rx="10.5" data-n="6" transform="rotate(109 343.2 190.2)"/>
+<rect x="379.7" y="233.1" width="48" height="21" rx="10.5" data-n="7" transform="rotate(176 403.7 243.6)"/>
+</svg>

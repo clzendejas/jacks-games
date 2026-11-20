@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Castle" data-palette="1:#9ad8ff 2:#ffd23f 3:#e4f3ff 4:#86d95b 5:#c5cce0 6:#ff6fae 7:#a97bff 8:#dccfff 9:#8a5a34 10:#f6dc9a" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<circle cx="515" cy="80" r="44" data-n="2"/>
+<path d="M156.7 105.4 A21.2 21.2 0 0 1 123.7 124 A30.6 30.6 0 0 1 69.1 124.6 A22.1 22.1 0 0 1 33.9 106.6 A14.2 14.2 0 0 1 44.8 83.7 A27.9 27.9 0 0 1 93.5 73 A28.4 28.4 0 0 1 143.3 82.7 A14.8 14.8 0 0 1 156.7 105.4Z" data-n="3"/>
+<path d="M-10 490 Q300 430 610 490 V610 H-10Z" data-n="4"/>
+<rect x="255" y="150" width="90" height="160" rx="0" data-n="5"/>
+<path d="M238 152 L300 46 L362 152Z" data-n="6"/>
+<path d="M300 46 V8" class="ln" fill="none" stroke-width="5"/>
+<path d="M300 8 L338 20 L300 32Z" data-n="2"/>
+<circle cx="300" cy="205" r="20" data-n="2"/>
+<rect x="105" y="225" width="90" height="262" rx="0" data-n="5"/>
+<path d="M89 227 L150 112 L211 227Z" data-n="7"/>
+<path d="M150 112 V72" class="ln" fill="none" stroke-width="5"/>
+<path d="M150 72 L185 84 L150 96Z" data-n="6"/>
+<path d="M133 320 V288 Q150 262 167 288 V320Z" data-n="2"/>
+<rect x="405" y="225" width="90" height="262" rx="0" data-n="5"/>
+<path d="M389 227 L450 112 L511 227Z" data-n="7"/>
+<path d="M450 112 V72" class="ln" fill="none" stroke-width="5"/>
+<path d="M450 72 L485 84 L450 96Z" data-n="6"/>
+<path d="M433 320 V288 Q450 262 467 288 V320Z" data-n="2"/>
+<path d="M195 492 V272 H227 V300 H259 V272 H291 V300 H309 V272 H341 V300 H373 V272 H405 V492Z" data-n="8"/>
+<path d="M262 492 V416 Q300 370 338 416 V492Z" data-n="9"/>
+<path d="M300 380 V492" class="ln" fill="none" stroke-width="4"/>
+<path d="M262 492 H338 Q340 540 390 610 H210 Q260 540 262 492Z" data-n="10"/>
+</svg>

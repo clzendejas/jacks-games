@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Turtle" data-palette="1:#7fd0f2 2:#f6dc9a 3:#4fbf6b 4:#e4f3ff 5:#8fdc7a 6:#3aa88c 7:#f2c14e 8:#ffa3c8" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<path d="M-10 530 Q150 504 300 530 T610 530 V610 H-10Z" data-n="2"/>
+<path d="M82.3 564.2 L83.4 560.2 L85.2 555 L87.7 548.5 L90.4 541 L93.3 532.8 L96 524.2 L98.4 515.3 L100.2 506.4 L101 497.5 L100.6 488.7 L98.3 480.1 L94.5 472.4 L89.8 465.5 L84.7 459.2 L79.5 453.3 L74.6 447.7 L70.2 442.5 L66.7 437.6 L64.4 433.2 L63.3 429.2 L63.2 424.7 L64.2 419.1 L66 412.8 L68.6 406.2 L71.7 399.6 L75 393.1 L78.2 387 L81.2 381.4 L83.7 376.5 L85.4 372.7 A6 6 0 0 0 74.6 367.3 L74.6 367.3 L72.7 370.6 L70 374.9 L66.7 380.2 L62.9 386.3 L59 392.9 L55.2 400 L51.7 407.4 L49 415 L47.1 422.8 L46.7 430.8 L48.2 438.7 L51.3 446.1 L55.5 452.9 L60.1 459.3 L64.9 465.4 L69.5 471.3 L73.5 477 L76.6 482.3 L78.6 487.1 L79.4 491.3 L79.3 496.3 L78.2 502.6 L76.4 509.6 L74 517.1 L71.1 524.7 L68 532.1 L64.9 539.2 L62 545.6 L59.5 551.3 L57.7 555.8 A13 13 0 0 0 82.3 564.2Z" data-n="3"/>
+<circle cx="520" cy="120" r="20" data-n="4"/>
+<circle cx="545" cy="60" r="13" data-n="4"/>
+<ellipse cx="185" cy="408" rx="66" ry="28" data-n="5" transform="rotate(28 185 408)"/>
+<ellipse cx="400" cy="418" rx="70" ry="28" data-n="5" transform="rotate(-28 400 418)"/>
+<path d="M135 385 L78 398 L128 356Z" data-n="5"/>
+<ellipse cx="478" cy="298" rx="64" ry="54" data-n="5"/>
+<path d="M128 372 Q138 188 290 184 Q442 188 452 372 Q290 402 128 372Z" data-n="6"/>
+<path d="M128 372 Q290 402 452 372 Q458 398 442 404 Q290 434 138 404 Q122 398 128 372Z" data-n="7"/>
+<path d="M338 285 L314 326.6 L266 326.6 L242 285 L266 243.4 L314 243.4Z" data-n="7"/>
+<path d="M230 312 L213 341.4 L179 341.4 L162 312 L179 282.6 L213 282.6Z" data-n="7"/>
+<path d="M418 312 L401 341.4 L367 341.4 L350 312 L367 282.6 L401 282.6Z" data-n="7"/>
+<circle cx="496" cy="286" r="12" data-fix="1" fill="#33263f" stroke="none"/>
+<circle cx="499.8" cy="281.7" r="4.1" data-fix="1" fill="#ffffff" stroke="none"/>
+<circle cx="478" cy="322" r="12" data-n="8"/>
+<path d="M505 318 Q520 326 530 312" class="ln" fill="none" stroke-width="4"/>
+</svg>

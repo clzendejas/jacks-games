@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Ice cream" data-palette="1:#c9f5e6 2:#ff6fae 3:#ffd23f 4:#e8b56c 5:#ffa3c8 6:#fff0a8 7:#a97bff 8:#f2545b" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<path d="M90 156.6 C42.4 127.2 66.2 95 90 117.4 C113.8 95 137.6 127.2 90 156.6Z" data-n="2"/>
+<path d="M510 90 L517.9 109.1 L538.5 110.7 L522.8 124.2 L527.6 144.3 L510 133.5 L492.4 144.3 L497.2 124.2 L481.5 110.7 L502.1 109.1Z" data-n="3"/>
+<path d="M505 470.9 C467.6 447.8 486.3 422.5 505 440.1 C523.7 422.5 542.4 447.8 505 470.9Z" data-n="2"/>
+<path d="M95 416 L101.3 431.3 L117.8 432.6 L105.3 443.3 L109.1 459.4 L95 450.8 L80.9 459.4 L84.7 443.3 L72.2 432.6 L88.7 431.3Z" data-n="3"/>
+<path d="M212 335 L300 580 L388 335Z" data-n="4"/>
+<path d="M227.8 379.1 L342.2 462.4 M372.2 379.1 L257.8 462.4" class="ln" fill="none" stroke-width="4"/>
+<path d="M249 437.9 L321.1 521.2 M351 437.9 L278.9 521.2" class="ln" fill="none" stroke-width="4"/>
+<path d="M401.9 343.2 A32.2 32.2 0 0 1 347.4 361.1 A50.5 50.5 0 0 1 257.2 361.7 A33.9 33.9 0 0 1 199.2 344.4 A15.9 15.9 0 0 1 217.1 322.3 A45.4 45.4 0 0 1 297.5 312 A46.3 46.3 0 0 1 379.7 321.3 A17.5 17.5 0 0 1 401.9 343.2Z" data-n="5"/>
+<circle cx="300" cy="285" r="96" data-n="5"/>
+<circle cx="300" cy="185" r="80" data-n="6"/>
+<circle cx="300" cy="102" r="62" data-n="7"/>
+<circle cx="300" cy="38" r="22" data-n="8"/>
+<path d="M250 270 l12 10 M340 262 l-10 12 M300 310 l14 0 M262 170 l10 -8 M335 180 l10 8 M290 96 l12 6" class="ln" fill="none" stroke-width="6"/>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Birthday cake" data-palette="1:#dccfff 2:#ffd23f 3:#ff6fae 4:#3fd0c0 5:#ffa3c8 6:#fff0a8 7:#a97bff 8:#ff9a3d 9:#5b8cff" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<rect x="-10" y="560" width="620" height="60" rx="0" data-n="2"/>
+<path d="M-10 40 Q300 130 610 40" class="ln" fill="none" stroke-width="4"/>
+<path d="M32 60 L88 60 L60 112Z" data-n="3"/>
+<path d="M152 80.3 L208 80.3 L180 132.3Z" data-n="4"/>
+<path d="M272 87 L328 87 L300 139Z" data-n="2"/>
+<path d="M392 80.3 L448 80.3 L420 132.3Z" data-n="3"/>
+<path d="M512 60 L568 60 L540 112Z" data-n="4"/>
+<ellipse cx="300" cy="582" rx="96" ry="18" data-n="4"/>
+<rect x="280" y="520" width="40" height="60" rx="0" data-n="4"/>
+<ellipse cx="300" cy="515" rx="226" ry="26" data-n="4"/>
+<rect x="130" y="380" width="340" height="128" rx="14" data-n="5"/>
+<path d="M130 394 Q130 380 144 380 H456 Q470 380 470 394 V406 Q441.7 434 413.3 406 Q385 450 356.7 406 Q328.3 426 300 406 Q271.7 454 243.3 406 Q215 434 186.7 406 Q158.3 446 130 406Z" data-n="3"/>
+<circle cx="200" cy="468" r="16" data-n="2"/>
+<circle cx="300" cy="468" r="16" data-n="2"/>
+<circle cx="400" cy="468" r="16" data-n="2"/>
+<rect x="190" y="262" width="220" height="124" rx="14" data-n="6"/>
+<path d="M190 276 Q190 262 204 262 H396 Q410 262 410 276 V286 Q382.5 318 355 286 Q327.5 306 300 286 Q272.5 330 245 286 Q217.5 310 190 286Z" data-n="7"/>
+<rect x="238" y="200" width="18" height="64" rx="5" data-n="4"/>
+<path d="M247 196 q-16 -24 0 -46 q16 22 0 46Z" data-n="8"/>
+<rect x="291" y="200" width="18" height="64" rx="5" data-n="3"/>
+<path d="M300 196 q-16 -24 0 -46 q16 22 0 46Z" data-n="8"/>
+<rect x="344" y="200" width="18" height="64" rx="5" data-n="9"/>
+<path d="M353 196 q-16 -24 0 -46 q16 22 0 46Z" data-n="8"/>
+</svg>

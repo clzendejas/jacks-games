@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coloring">
+<meta name="theme-color" content="#3a1b63">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Logan's Coloring Book</title>
+<style>
+:root{
+  /* screens: title -> packs -> pages of a pack -> painting (paper + color palette) */
+  color-scheme: dark;
+  --night:#2a1250;
+  --night-2:#5a2d91;
+  --ink:#ffffff;
+  --sun:#ffd23f;
+  --sun-ink:#3b2b00;
+  --bow:#ff8a2a;
+  --quiet:rgba(255,255,255,.16);
+  --line:#33263f;
+  --font: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", system-ui, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  background:radial-gradient(120% 80% at 50% 30%, var(--night-2), var(--night));
+  color:var(--ink);font-family:var(--font);
+  overflow:hidden;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.screen{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 16px)
+          calc(env(safe-area-inset-bottom) + 14px) calc(env(safe-area-inset-left) + 16px);
+}
+.screen.on{display:flex}
+.small{width:52px;height:52px;border-radius:50%;background:var(--quiet);display:grid;place-items:center;flex:none}
+.small svg{width:26px;height:26px}
+.small.off{opacity:.45}
+.small:active{transform:scale(.94)}
+.bar{display:flex;align-items:center;gap:10px;flex:none}
+.bar h2{flex:1;margin:0;text-align:center;font-size:24px;font-weight:900;letter-spacing:.06em;text-wrap:balance}
+.bar .gap{width:52px;flex:none}
+
+/* title screen */
+#home{align-items:center;justify-content:center;gap:min(3.2vh,22px);text-align:center}
+.studio{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;letter-spacing:.18em;color:var(--sun)}
+.studio svg{width:20px;height:20px}
+.logan{
+  width:min(52vw,38vh,300px);aspect-ratio:1;border-radius:50%;overflow:hidden;background:#fff;
+  border:6px solid var(--sun);box-shadow:0 10px 0 rgba(0,0,0,.25);
+}
+.logan img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;display:block}
+#home h1{margin:0;font-size:min(9vw,7vh,54px);font-weight:900;letter-spacing:.05em;line-height:1.05}
+#home h1 b{display:block;color:var(--sun)}
+#play{
+  width:min(26vw,18vh,120px);aspect-ratio:1;border-radius:50%;background:var(--sun);color:var(--sun-ink);
+  display:grid;place-items:center;box-shadow:0 8px 0 rgba(0,0,0,.3);animation:breathe 2.2s ease-in-out infinite;
+}
+#play svg{width:50%;height:50%}
+#play:active{transform:translateY(4px)}
+@keyframes breathe{50%{transform:scale(1.07)}}
+
+/* pack and page pickers */
+.grid{flex:1;min-height:0;overflow-y:auto;display:grid;gap:16px;align-content:center;justify-content:center;padding:14px 2px;-webkit-overflow-scrolling:touch}
+#packGrid{grid-template-columns:repeat(auto-fit,minmax(150px,204px))}
+#pageGrid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:min(100%,calc(100vh - 150px));width:100%;margin:0 auto}
+@media (orientation:landscape){
+  #pageGrid{grid-template-columns:repeat(4,minmax(0,1fr));max-width:1100px}
+}
+.card{
+  position:relative;display:flex;flex-direction:column;border-radius:24px;overflow:hidden;background:#fff;
+  box-shadow:0 7px 0 rgba(0,0,0,.28);transition:transform .08s;text-align:center;
+}
+.card:active{transform:translateY(4px)}
+.card svg{display:block;width:100%;height:auto;aspect-ratio:1;pointer-events:none}
+.card .name{padding:9px 6px 10px;font-size:17px;font-weight:900;letter-spacing:.05em;color:#fff;text-transform:uppercase}
+.card .stars{position:absolute;left:8px;top:8px;display:flex;gap:3px}
+.card .stars i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.85);border:2.5px solid var(--line)}
+.card .stars i.on{background:var(--sun)}
+.card .badge{
+  position:absolute;right:8px;top:8px;width:38px;height:38px;border-radius:50%;background:var(--sun);color:var(--sun-ink);
+  display:grid;place-items:center;border:3px solid var(--line);
+}
+.card .badge svg{width:22px;height:22px;aspect-ratio:auto}
+
+/* painting */
+#paint{gap:10px}
+#modes{display:flex;background:var(--quiet);border-radius:99px;padding:4px;gap:4px;margin:0 auto}
+#modes button{height:44px;min-width:76px;padding:0 14px;border-radius:99px;display:grid;place-items:center;font-size:21px;font-weight:900;letter-spacing:.08em}
+#modes button svg{width:34px;height:28px}
+#modes button.on{background:var(--sun);color:var(--sun-ink)}
+#work{flex:1;min-height:0;display:flex;gap:12px}
+#stage{flex:1;min-width:0;min-height:0;display:grid;place-items:center}
+#paper{
+  position:relative;background:#fff;border-radius:22px;overflow:hidden;touch-action:none;
+  box-shadow:0 8px 0 rgba(0,0,0,.28);width:10px;height:10px;
+}
+#paper svg{display:block;width:100%;height:100%}
+#paper svg *{pointer-events:none}
+#paper svg [data-n]{pointer-events:auto}
+#paper text{font-family:var(--font);font-weight:900;stroke:none;fill:#8d86a0;pointer-events:none;text-anchor:middle;dominant-baseline:central}
+#paper text.on{fill:var(--line)}
+#paper .pop{animation:pop .45s}
+@keyframes pop{0%{opacity:.35}100%{opacity:1}}
+#pal{display:grid;gap:10px;align-content:center;justify-content:center;flex:none;--sw:56px}
+.sw{
+  position:relative;width:var(--sw);height:var(--sw);border-radius:50%;border:4px solid rgba(255,255,255,.9);
+  display:grid;place-items:center;font-size:calc(var(--sw)*.46);font-weight:900;line-height:1;
+  box-shadow:0 4px 0 rgba(0,0,0,.28);transition:transform .12s;
+}
+.sw.sel{transform:scale(1.1);outline:5px solid var(--sun);outline-offset:3px;z-index:1}
+.sw.done{opacity:.5}
+.sw.done::after{
+  content:"";position:absolute;right:-6px;top:-6px;width:42%;height:42%;border-radius:50%;background:#fff;border:2.5px solid var(--line);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 13l5 5 9-11' fill='none' stroke='%2333263f' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size:70%;background-position:center;background-repeat:no-repeat;
+}
+.sw.hey{animation:hey .5s 2}
+@keyframes hey{50%{transform:scale(1.35) rotate(-8deg)}}
+.sw.eraser{background:#fff;color:var(--line)}
+.sw.eraser svg{width:56%;height:56%}
+#clear{position:relative}
+#clear.holding::before{
+  content:"";position:absolute;inset:-4px;border-radius:50%;border:4px solid var(--sun);
+  clip-path:inset(0 100% 0 0);animation:hold .9s linear forwards;
+}
+@keyframes hold{to{clip-path:inset(0 0 0 0)}}
+.spark{position:fixed;width:22px;height:22px;pointer-events:none;z-index:30;color:var(--sun);animation:rise .7s ease-out forwards}
+@keyframes rise{from{opacity:1;transform:translate(-50%,-50%) scale(.4)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.4) rotate(50deg)}}
+
+/* finished a paint-by-numbers page */
+#win{
+  position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  background:rgba(28,10,56,.8);z-index:20;overflow:hidden;
+}
+#win.on{display:flex}
+#win .logan{width:min(44vw,30vh,230px);animation:bounce 1s infinite}
+#win h1{margin:0;font-size:34px;font-weight:900;letter-spacing:.05em;text-align:center}
+#next{
+  width:110px;height:110px;border-radius:50%;background:var(--sun);color:var(--sun-ink);
+  display:grid;place-items:center;box-shadow:0 8px 0 rgba(0,0,0,.3);
+}
+#next svg{width:54px;height:54px}
+@keyframes bounce{50%{transform:translateY(-14px) rotate(4deg) scale(1.05)}}
+.conf{position:absolute;top:-20px;width:12px;height:18px;border-radius:3px;animation:conf linear forwards}
+@keyframes conf{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s !important}}
+</style>
+</head>
+<body>
+
+<div id="home" class="screen on">
+  <div class="studio"><svg viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" d="M50 6l13 28 31 4-23 21 6 31-27-15-27 15 6-31L6 38l31-4z"/></svg>LOGAN&rsquo;S GAMES</div>
+  <div class="logan"><img src="logan.webp" alt="Logan giving a thumbs up"></div>
+  <h1>LOGAN&rsquo;S<b>COLORING BOOK</b></h1>
+  <button id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg></button>
+</div>
+
+<div id="packs" class="screen">
+  <div class="bar">
+    <button class="small" id="toHome" aria-label="Back to the start"></button>
+    <h2>PICK A BOOK</h2>
+    <button class="small" id="sound" aria-label="Sound on or off"></button>
+  </div>
+  <div class="grid" id="packGrid"></div>
+</div>
+
+<div id="pages" class="screen">
+  <div class="bar">
+    <button class="small" id="toPacks" aria-label="Back to the books"></button>
+    <h2 id="packName"></h2>
+    <div class="gap"></div>
+  </div>
+  <div class="grid" id="pageGrid"></div>
+</div>
+
+<div id="paint" class="screen">
+  <div class="bar">
+    <button class="small" id="toPages" aria-label="Back to the pictures"></button>
+    <div id="modes">
+      <button id="mNum" aria-label="Paint by numbers">123</button>
+      <button id="mFree" aria-label="Free coloring"><svg viewBox="0 0 34 28" aria-hidden="true" fill="none" stroke-linecap="round" stroke-width="4.5">
+        <path d="M3 25a14 14 0 0 1 28 0" stroke="#f2545b"/><path d="M8 25a9 9 0 0 1 18 0" stroke="#ff9a3d"/><path d="M13 25a4 4 0 0 1 8 0" stroke="#5b8cff"/></svg></button>
+    </div>
+    <button class="small" id="undo" aria-label="Undo"></button>
+    <button class="small" id="clear" aria-label="Hold to start this picture again"></button>
+  </div>
+  <div id="work">
+    <div id="stage"><div id="paper"></div></div>
+    <div id="pal"></div>
+  </div>
+</div>
+
+<div id="win">
+  <div class="logan"><img src="logan.webp" alt="Logan giving a thumbs up"></div>
+  <h1>YOU DID IT!</h1>
+  <button id="next" aria-label="Pick another picture"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg></button>
+</div>
+
+<script>
+/* ---------- small helpers ---------- */
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const KEY = 'logan-coloring:v1:';
+const BRUSH = 54;            // brush width, in picture units (the picture is 600 wide)
+const MAPW = 300;            // size of the hidden "which section is here" map
+const DONE_NUM = 0.86;       // once this much of a section is painted, the last slivers fill in
+const DONE_FREE = 0.93;
+const FREE_COLORS = ['#f2545b','#ff9a3d','#ffd23f','#86d95b','#2f9e5b','#3fd0c0','#9ad8ff','#5b8cff','#a97bff','#dccfff',
+  '#ffa3c8','#ff6fae','#8a5a34','#e9b16c','#f3bb8f','#ffe9c4','#9aa3b5','#33263f','#ffffff'];
+const ICON = {
+  back:'<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg>',
+  undo:'<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M8 5L4 9l4 4M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
+  clear:'<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M19 12a7 7 0 1 1-2.2-5.1M19 4v4h-4"/></svg>',
+  sound:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9z"/><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  star:'<svg viewBox="0 0 100 100"><path fill="currentColor" d="M50 6l13 28 31 4-23 21 6 31-27-15-27 15 6-31L6 38l31-4z"/></svg>',
+  eraser:'<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" d="M4 15l9-9 7 7-6 6H8zM9 10l6 6M4 20h16"/></svg>'
+};
+$('toHome').innerHTML = $('toPacks').innerHTML = $('toPages').innerHTML = ICON.back;
+$('undo').innerHTML = ICON.undo; $('clear').innerHTML = ICON.clear; $('sound').innerHTML = ICON.sound;
+
+function store(k, v){
+  try{
+    if(v === undefined){ const s = localStorage.getItem(KEY + k); return s ? JSON.parse(s) : null; }
+    if(v === null) localStorage.removeItem(KEY + k); else localStorage.setItem(KEY + k, JSON.stringify(v));
+  }catch(e){}
+  return null;
+}
+function show(id){ for(const s of document.querySelectorAll('.screen')) s.classList.toggle('on', s.id === id); }
+function tint(hex, amt){ // mix a color toward white
+  const n = parseInt(hex.slice(1), 16), m = c => Math.round(c + (255 - c) * amt);
+  return 'rgb(' + m(n >> 16) + ',' + m(n >> 8 & 255) + ',' + m(n & 255) + ')';
+}
+function isLight(hex){ const n = parseInt(hex.slice(1), 16); return (n >> 16) * .3 + (n >> 8 & 255) * .59 + (n & 255) * .11 > 150; }
+
+/* ---------- sound ---------- */
+let AC = null, muted = !!store('muted');
+function tone(freq, to, dur, when, vol){
+  if(muted) return;
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+    const t = AC.currentTime + (when || 0), o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || .16, t + .02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur + .02);
+  }catch(e){}
+}
+const sfx = {
+  pop(){ tone(520, 900, .16); },
+  nope(){ tone(300, 240, .14, 0, .1); },
+  tap(){ tone(660, 700, .07, 0, .08); },
+  win(){ [523, 659, 784, 1047].forEach((f, i) => tone(f, f, .28, i * .13)); }
+};
+function drawSound(){ $('sound').classList.toggle('off', muted); }
+$('sound').onclick = () => { muted = !muted; store('muted', muted ? 1 : null); drawSound(); sfx.tap(); };
+drawSound();
+
+/* ---------- the pictures ---------- */
+let PACKS = [];
+const PAGES = {};            // "zoo/lion" -> {tpl: <svg>, pal: {1:'#..'}, name}
+let UID = 0;
+
+async function loadPictures(){
+  let texts = {};
+  if(window.PACK_DATA){ PACKS = window.PACK_DATA.packs; texts = window.PACK_DATA.svg; }
+  else{
+    PACKS = await (await fetch('packs/packs.json')).json();
+    await Promise.all(PACKS.flatMap(p => p.pages.map(async g => {
+      texts[p.id + '/' + g.id] = await (await fetch('packs/' + p.id + '/' + g.id + '.svg')).text();
+    })));
+  }
+  for(const p of PACKS) for(const g of p.pages){
+    const key = p.id + '/' + g.id;
+    const tpl = document.importNode(new DOMParser().parseFromString(texts[key], 'image/svg+xml').documentElement, true);
+    const pal = {};
+    for(const part of (tpl.getAttribute('data-palette') || '').split(' ')){ const [n, c] = part.split(':'); if(c) pal[n] = c; }
+    PAGES[key] = {tpl, pal, name: g.name};
+  }
+}
+
+/* Build a picture ready to show. Each section is followed by a group that holds its
+   brush strokes (clipped to the section, so paint stays inside the lines) and a copy
+   of its outline drawn on top of the paint. */
+function buildView(key, st){
+  const pg = PAGES[key], svg = pg.tpl.cloneNode(true), u = 'v' + (++UID);
+  const defs = document.createElementNS(NS, 'defs'), regs = [];
+  svg.removeAttribute('data-palette');
+  for(const el of [...svg.children]){
+    if(!el.hasAttribute('data-n')) continue;
+    const i = regs.length, n = el.getAttribute('data-n');
+    const cp = document.createElementNS(NS, 'clipPath'); cp.id = u + 'c' + i;
+    const shape = el.cloneNode(false); shape.removeAttribute('data-n'); cp.appendChild(shape); defs.appendChild(cp);
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('clip-path', 'url(#' + cp.id + ')'); g.setAttribute('fill', 'none'); g.setAttribute('stroke-width', BRUSH);
+    const line = el.cloneNode(false); line.removeAttribute('data-n'); line.setAttribute('fill', 'none');
+    el.after(g); g.after(line);
+    regs.push({el, g, n, color: pg.pal[n]});
+  }
+  svg.prepend(defs);
+  regs.forEach((r, i) => {
+    if(st === 'full'){ r.el.setAttribute('fill', r.color); return; }
+    const s = st && st.r[i];
+    if(!s) return;
+    if(s[0]) r.el.setAttribute('fill', s[0]);
+    for(const k of s[1]) r.g.appendChild(strokeEl(k[0], k[1]));
+  });
+  return {svg, regs};
+}
+function strokeD(pts){
+  let d = 'M' + pts[0] + ' ' + pts[1];
+  if(pts.length === 2) return d + 'l.01 0';
+  for(let i = 2; i < pts.length; i += 2) d += 'L' + pts[i] + ' ' + pts[i + 1];
+  return d;
+}
+function strokeEl(color, pts){
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('stroke', color); p.setAttribute('d', strokeD(pts));
+  return p;
+}
+function loadState(key, mode){ return store(key + ':' + mode) || {r: {}, done: false}; }
+function hasPaint(st){ return Object.keys(st.r).length > 0; }
+
+/* ---------- pickers ---------- */
+function drawPacks(){
+  const grid = $('packGrid'); grid.innerHTML = '';
+  for(const p of PACKS){
+    const b = document.createElement('button'); b.className = 'card'; b.style.background = p.color;
+    b.setAttribute('aria-label', p.name);
+    b.appendChild(buildView(p.id + '/' + p.pages[0].id, 'full').svg);
+    const stars = document.createElement('div'); stars.className = 'stars';
+    for(const g of p.pages){ const i = document.createElement('i'); if(loadState(p.id + '/' + g.id, 'num').done) i.className = 'on'; stars.appendChild(i); }
+    const name = document.createElement('div'); name.className = 'name'; name.textContent = p.name;
+    b.append(stars, name);
+    b.onclick = () => { sfx.tap(); openPack(p); };
+    grid.appendChild(b);
+  }
+}
+let curPack = null;
+function openPack(p){
+  curPack = p; $('packName').textContent = p.name.toUpperCase();
+  const grid = $('pageGrid'); grid.innerHTML = '';
+  for(const g of p.pages){
+    const key = p.id + '/' + g.id, num = loadState(key, 'num'), free = loadState(key, 'free');
+    const last = store(key + ':last') || 'num';
+    const st = last === 'free' && hasPaint(free) ? free : hasPaint(num) ? num : free;
+    const b = document.createElement('button'); b.className = 'card'; b.style.background = p.color;
+    b.setAttribute('aria-label', g.name);
+    b.appendChild(buildView(key, st).svg);
+    if(num.done){ const d = document.createElement('div'); d.className = 'badge'; d.innerHTML = ICON.star; b.appendChild(d); }
+    b.onclick = () => { sfx.tap(); openPage(key, last); };
+    grid.appendChild(b);
+  }
+  show('pages');
+}
+
+/* ---------- painting ---------- */
+let V = null;                // the open picture
+const fingers = new Map();   // pointerId -> {reg, pts, el, dead}
+
+function openPage(key, mode){
+  saveNow();
+  const pg = PAGES[key], st = loadState(key, mode), view = buildView(key, st);
+  V = {key, mode, pg, st, regs: view.regs, svg: view.svg, sel: null, undo: [],
+       map: null, total: [], covN: [], cov: null, covColor: [], label: [], texts: []};
+  store(key + ':last', mode);
+  $('paper').innerHTML = ''; $('paper').appendChild(view.svg);
+  $('mNum').classList.toggle('on', mode === 'num'); $('mFree').classList.toggle('on', mode === 'free');
+  drawPalette();
+  show('paint'); layout();
+  buildMap(V);
+}
+function isDone(i){   // a section tucked completely behind others counts as done
+  if(V.map && !V.total[i]) return true;
+  const s = V.st.r[i]; return !!s && s[0] === V.regs[i].color && s[1].length === 0;
+}
+function paintable(i){
+  if(V.mode === 'num') return V.regs[i].n === V.sel.n && !isDone(i);
+  const s = V.st.r[i];
+  return !(s && s[0] === V.sel.color && s[1].length === 0) && !(!s && V.sel.color === '#ffffff');
+}
+function drawRegion(i){
+  const r = V.regs[i], s = V.st.r[i];
+  const hint = V.mode === 'num' && V.sel && r.n === V.sel.n;
+  r.el.setAttribute('fill', s && s[0] ? s[0] : hint ? tint(r.color, .72) : '#ffffff');
+  const t = V.texts[i];
+  if(t){ t.style.display = V.mode === 'num' && !isDone(i) ? '' : 'none'; t.classList.toggle('on', !!hint); }
+}
+function drawAll(){ V.regs.forEach((r, i) => drawRegion(i)); }
+
+function drawPalette(){
+  const pal = $('pal'); pal.innerHTML = '';
+  const add = (color, n) => {
+    const b = document.createElement('button'); b.className = 'sw'; b.style.background = color;
+    b.style.color = isLight(color) ? '#33263f' : '#ffffff';
+    if(n){ b.textContent = n; b.dataset.n = n; b.setAttribute('aria-label', 'Color ' + n); }
+    else if(color === '#ffffff'){ b.classList.add('eraser'); b.innerHTML = ICON.eraser; b.setAttribute('aria-label', 'Eraser'); }
+    else b.setAttribute('aria-label', 'Color');
+    b.onclick = () => { sfx.tap(); pick({n, color}); };
+    b._c = {n, color};
+    pal.appendChild(b);
+  };
+  if(V.mode === 'num') for(const n of Object.keys(V.pg.pal)) add(V.pg.pal[n], n);
+  else for(const c of FREE_COLORS) add(c, null);
+  let first = pal.firstChild._c;
+  if(V.mode === 'num'){ const open = Object.keys(V.pg.pal).find(n => !colorDone(n)); if(open) first = {n: open, color: V.pg.pal[open]}; }
+  else{ const c = store('lastColor'); if(c && FREE_COLORS.includes(c)) first = {n: null, color: c}; }
+  pick(first);
+}
+function colorDone(n){ return V.regs.every((r, i) => r.n !== n || isDone(i)); }
+function pick(c){
+  V.sel = c;
+  if(V.mode === 'free') store('lastColor', c.color);
+  for(const b of $('pal').children){
+    b.classList.toggle('sel', b._c.color === c.color && b._c.n === c.n);
+    if(V.mode === 'num') b.classList.toggle('done', colorDone(b._c.n));
+  }
+  drawAll();
+}
+
+/* The hidden map: the picture drawn small with every section in its own flat color,
+   so we can tell which section a finger is on and how much of it has been painted. */
+function buildMap(v){
+  const s = v.pg.tpl.cloneNode(true), codes = new Map();
+  s.setAttribute('width', MAPW); s.setAttribute('height', MAPW); s.setAttribute('shape-rendering', 'crispEdges');
+  let i = 0;
+  for(const el of [...s.children]){
+    if(el.hasAttribute('data-n')){
+      const r = 20 + (i * 53) % 230, g = 20 + (i * 101) % 230, b = 20 + (i * 197) % 230;
+      codes.set(r << 16 | g << 8 | b, i++);
+      el.setAttribute('fill', 'rgb(' + r + ',' + g + ',' + b + ')'); el.setAttribute('stroke', 'rgb(' + r + ',' + g + ',' + b + ')');
+    }else if(el.hasAttribute('data-fix')){ el.setAttribute('fill', '#000'); el.setAttribute('stroke', '#000'); }
+    else el.remove();
+  }
+  const img = new Image();
+  img.onload = () => {
+    if(V !== v) return;
+    try{
+      const c = document.createElement('canvas'); c.width = c.height = MAPW;
+      const x = c.getContext('2d', {willReadFrequently: true}); x.drawImage(img, 0, 0, MAPW, MAPW);
+      const d = x.getImageData(0, 0, MAPW, MAPW).data, map = new Int16Array(MAPW * MAPW);
+      v.total = v.regs.map(() => 0);
+      for(let k = 0; k < map.length; k++){
+        const id = codes.get(d[k * 4] << 16 | d[k * 4 + 1] << 8 | d[k * 4 + 2]);
+        map[k] = id === undefined ? -1 : id;
+        if(id !== undefined) v.total[id]++;
+      }
+      if(v.total.filter(t => t > 0).length < v.regs.length * .6) throw 0;
+      v.map = map; v.cov = new Uint8Array(MAPW * MAPW); v.covN = v.regs.map(() => 0);
+      placeLabels(v);
+      v.regs.forEach((r, i) => replay(i));
+    }catch(e){ fallbackLabels(v); }
+    addLabels(v);
+  };
+  img.onerror = () => { if(V === v){ fallbackLabels(v); addLabels(v); } };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(s));
+}
+/* number goes at the spot in each section that is farthest from its edges */
+function placeLabels(v){
+  const W = MAPW, m = v.map, d = new Uint16Array(W * W), big = 9999;
+  for(let y = 0; y < W; y++) for(let x = 0; x < W; x++){
+    const k = y * W + x, id = m[k];
+    d[k] = (id < 0 || x === 0 || y === 0 || x === W - 1 || y === W - 1 || m[k - 1] !== id || m[k + 1] !== id || m[k - W] !== id || m[k + W] !== id) ? 0 : big;
+  }
+  for(let k = W + 1; k < W * W; k++) if(d[k]) d[k] = Math.min(d[k], d[k - 1] + 1, d[k - W] + 1);
+  for(let k = W * W - W - 2; k >= 0; k--) if(d[k]) d[k] = Math.min(d[k], d[k + 1] + 1, d[k + W] + 1);
+  const best = v.regs.map(() => -1);
+  for(let k = 0; k < W * W; k++){ const id = m[k]; if(id >= 0 && (best[id] < 0 || d[k] > d[best[id]])) best[id] = k; }
+  const u = 600 / W;
+  v.label = best.map(k => k < 0 ? null : {x: (k % W + .5) * u, y: ((k / W | 0) + .5) * u, room: d[k] * u});
+}
+function fallbackLabels(v){
+  v.map = null;
+  v.label = v.regs.map(r => { const b = r.el.getBBox(); return {x: b.x + b.width / 2, y: b.y + b.height / 2, room: Math.min(b.width, b.height) / 3}; });
+  v.len = v.regs.map(() => 0);
+  v.area = v.regs.map(r => { const b = r.el.getBBox(); return b.width * b.height * .7; });
+}
+function addLabels(v){
+  const g = document.createElementNS(NS, 'g');
+  v.texts = v.label.map((L, i) => {
+    if(!L) return null;
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', L.x.toFixed(1)); t.setAttribute('y', L.y.toFixed(1));
+    t.setAttribute('font-size', Math.max(15, Math.min(40, L.room * 1.5)).toFixed(0));
+    t.textContent = v.regs[i].n; g.appendChild(t); return t;
+  });
+  v.svg.appendChild(g); drawAll();
+}
+
+/* painted-so-far bookkeeping */
+function clearCov(i){
+  if(V.map){ const m = V.map, c = V.cov; for(let k = 0; k < m.length; k++) if(m[k] === i) c[k] = 0; V.covN[i] = 0; }
+  else V.len[i] = 0;
+}
+function mark(i, x, y){
+  if(!V.map) return;
+  const u = MAPW / 600, cx = x * u, cy = y * u, r = BRUSH / 2 * u, m = V.map, c = V.cov;
+  const x0 = Math.max(0, cx - r | 0), x1 = Math.min(MAPW - 1, cx + r | 0), y0 = Math.max(0, cy - r | 0), y1 = Math.min(MAPW - 1, cy + r | 0);
+  let n = 0;
+  for(let py = y0; py <= y1; py++) for(let px = x0; px <= x1; px++){
+    const k = py * MAPW + px;
+    if(m[k] === i && !c[k] && (px - cx) * (px - cx) + (py - cy) * (py - cy) <= r * r){ c[k] = 1; n++; }
+  }
+  V.covN[i] += n;
+}
+function markLine(i, ax, ay, bx, by){
+  const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 10));
+  for(let k = 1; k <= n; k++) mark(i, ax + (bx - ax) * k / n, ay + (by - ay) * k / n);
+  if(!V.map) V.len[i] += Math.hypot(bx - ax, by - ay) + (ax === bx && ay === by ? BRUSH : 0);
+}
+function covered(i){ return V.map ? (V.total[i] ? V.covN[i] / V.total[i] : 1) : V.len[i] * BRUSH / (V.area[i] || 1); }
+function replay(i){          // rebuild the bookkeeping for a section from its saved strokes
+  clearCov(i); V.covColor[i] = null;
+  const s = V.st.r[i]; if(!s || !s[1].length) return;
+  const color = s[1][s[1].length - 1][0]; V.covColor[i] = color;
+  for(const k of s[1]) if(k[0] === color){
+    const p = k[1]; markLine(i, p[0], p[1], p[0], p[1]);
+    for(let j = 2; j < p.length; j += 2) markLine(i, p[j - 2], p[j - 1], p[j], p[j + 1]);
+  }
+}
+function regionAt(x, y, e){
+  if(x < 0 || y < 0 || x >= 600 || y >= 600) return -1;
+  if(V.map) return V.map[(y * MAPW / 600 | 0) * MAPW + (x * MAPW / 600 | 0)];
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  return el ? V.regs.findIndex(r => r.el === el) : -1;
+}
+
+function begin(F, i, x, y){
+  const old = V.st.r[i];
+  V.undo.push({i, b: old ? old[0] : null, s: old ? old[1].slice() : []});
+  if(V.undo.length > 60) V.undo.shift();
+  const s = V.st.r[i] || (V.st.r[i] = [null, []]);
+  if(V.covColor[i] !== V.sel.color){ clearCov(i); V.covColor[i] = V.sel.color; }
+  F.reg = i; F.pts = [Math.round(x), Math.round(y)];
+  F.el = strokeEl(V.sel.color, F.pts); V.regs[i].g.appendChild(F.el);
+  F.rec = [V.sel.color, F.pts]; s[1].push(F.rec);
+  if(s[1].length > 60) { s[1].shift(); V.regs[i].g.firstChild.remove(); }
+  markLine(i, x, y, x, y);
+  check(F);
+}
+function extend(F, x, y){
+  const p = F.pts, lx = p[p.length - 2], ly = p[p.length - 1];
+  if(Math.hypot(x - lx, y - ly) < 4) return;
+  p.push(Math.round(x), Math.round(y));
+  F.el.setAttribute('d', strokeD(p));
+  markLine(F.reg, lx, ly, x, y);
+  check(F);
+}
+function check(F){
+  const i = F.reg;
+  if(covered(i) < (V.mode === 'num' ? DONE_NUM : DONE_FREE)) return;
+  V.st.r[i] = [V.sel.color, []];           // enough painted: the whole section takes the color
+  V.regs[i].g.innerHTML = ''; clearCov(i); V.covColor[i] = null;
+  F.reg = null; F.dead = V.mode === 'free';
+  drawRegion(i);
+  V.regs[i].el.classList.remove('pop'); void V.regs[i].el.getBBox(); V.regs[i].el.classList.add('pop');
+  sfx.pop(); sparkle(i);
+  if(V.mode === 'num'){
+    if(colorDone(V.sel.n)){
+      const open = Object.keys(V.pg.pal).find(n => !colorDone(n));
+      if(open) setTimeout(() => { if(V && V.mode === 'num') pick({n: open, color: V.pg.pal[open]}); }, 350);
+      else { pick(V.sel); finished(); }
+    }
+  }
+  saveSoon();
+}
+function sparkle(i){
+  const L = V.label[i]; if(!L) return;
+  const b = $('paper').getBoundingClientRect(), x = b.left + L.x / 600 * b.width, y = b.top + L.y / 600 * b.height;
+  for(let k = 0; k < 5; k++){
+    const s = document.createElement('div'); s.className = 'spark'; s.innerHTML = ICON.star;
+    const a = Math.PI * 2 * k / 5 + Math.random();
+    s.style.left = x + 'px'; s.style.top = y + 'px';
+    s.style.setProperty('--dx', Math.cos(a) * 60 + 'px'); s.style.setProperty('--dy', Math.sin(a) * 60 + 'px');
+    document.body.appendChild(s); setTimeout(() => s.remove(), 750);
+  }
+}
+function xy(e){ const b = $('paper').getBoundingClientRect(); return [(e.clientX - b.left) / b.width * 600, (e.clientY - b.top) / b.height * 600]; }
+
+$('paper').addEventListener('pointerdown', e => {
+  if(!V || !V.sel) return;
+  e.preventDefault();
+  try{ $('paper').setPointerCapture(e.pointerId); }catch(err){}
+  const F = {reg: null, dead: false}; fingers.set(e.pointerId, F);
+  const [x, y] = xy(e), i = regionAt(x, y, e);
+  F.x = x; F.y = y;
+  if(i < 0) return;
+  if(paintable(i)) begin(F, i, x, y);
+  else if(V.mode === 'num' && !isDone(i)){   // wrong color for this section: show which one it wants
+    const b = [...$('pal').children].find(b => b._c.n === V.regs[i].n);
+    if(b){ b.classList.remove('hey'); void b.offsetWidth; b.classList.add('hey'); }
+    sfx.nope();
+  }
+});
+$('paper').addEventListener('pointermove', e => {
+  const F = fingers.get(e.pointerId); if(!F || F.dead || !V) return;
+  e.preventDefault();
+  for(const ev of (e.getCoalescedEvents ? e.getCoalescedEvents() : []).concat(e)){
+    // walk from the last spot in small steps, so a fast swipe still catches thin sections
+    const [tx, ty] = xy(ev), n = Math.max(1, Math.ceil(Math.hypot(tx - F.x, ty - F.y) / 8)), sx = F.x, sy = F.y;
+    for(let k = 1; k <= n && !F.dead; k++){
+      const x = sx + (tx - sx) * k / n, y = sy + (ty - sy) * k / n, i = regionAt(x, y, ev);
+      if(F.reg === null){ if(i >= 0 && paintable(i)) begin(F, i, x, y); }
+      else if(V.mode === 'num' && i >= 0 && i !== F.reg && paintable(i)) begin(F, i, x, y);   // slide onto the next matching section
+      else extend(F, x, y);
+    }
+    F.x = tx; F.y = ty;
+    if(F.dead) break;
+  }
+});
+function lift(e){ if(fingers.delete(e.pointerId)) saveSoon(); }
+$('paper').addEventListener('pointerup', lift);
+$('paper').addEventListener('pointercancel', lift);
+$('paper').addEventListener('contextmenu', e => e.preventDefault());
+
+$('undo').onclick = () => {
+  const u = V && V.undo.pop(); if(!u){ sfx.nope(); return; }
+  fingers.clear(); sfx.tap();
+  if(u.b === null && !u.s.length) delete V.st.r[u.i]; else V.st.r[u.i] = [u.b, u.s];
+  const g = V.regs[u.i].g; g.innerHTML = '';
+  for(const k of u.s) g.appendChild(strokeEl(k[0], k[1]));
+  replay(u.i); V.st.done = false;
+  if(V.mode === 'num') pick(V.sel); else drawRegion(u.i);
+  saveSoon();
+};
+let holdT = 0;
+function holdEnd(){ clearTimeout(holdT); $('clear').classList.remove('holding'); }
+$('clear').addEventListener('pointerdown', () => {
+  $('clear').classList.add('holding');
+  holdT = setTimeout(() => {
+    holdEnd(); if(!V) return;
+    V.st = {r: {}, done: false}; saveNow(); sfx.pop(); openPage(V.key, V.mode);
+  }, 900);
+});
+for(const ev of ['pointerup', 'pointerleave', 'pointercancel']) $('clear').addEventListener(ev, holdEnd);
+
+$('mNum').onclick = () => { if(V.mode !== 'num'){ sfx.tap(); openPage(V.key, 'num'); } };
+$('mFree').onclick = () => { if(V.mode !== 'free'){ sfx.tap(); openPage(V.key, 'free'); } };
+
+let saveT = 0;
+function saveSoon(){ clearTimeout(saveT); saveT = setTimeout(saveNow, 400); }
+function saveNow(){
+  clearTimeout(saveT); if(!V) return;
+  if(hasPaint(V.st) || V.st.done) store(V.key + ':' + V.mode, V.st); else store(V.key + ':' + V.mode, null);
+}
+addEventListener('pagehide', saveNow);
+document.addEventListener('visibilitychange', () => { if(document.hidden) saveNow(); });
+
+function finished(){
+  V.st.done = true; saveNow();
+  setTimeout(() => {
+    sfx.win(); $('win').classList.add('on');
+    const cols = ['#ffd23f', '#ff6fae', '#3fd0c0', '#a97bff', '#ff8a2a', '#5b8cff'];
+    for(let i = 0; i < 46; i++){
+      const c = document.createElement('div'); c.className = 'conf';
+      c.style.left = Math.random() * 100 + '%'; c.style.background = cols[i % cols.length];
+      c.style.animationDuration = 1.6 + Math.random() * 1.8 + 's'; c.style.animationDelay = Math.random() * .6 + 's';
+      $('win').appendChild(c); setTimeout(() => c.remove(), 4200);
+    }
+  }, 500);
+}
+$('win').onclick = e => { $('win').classList.remove('on'); if(e.target.closest('#next')) leavePaint(); };
+function leavePaint(){ saveNow(); V = null; fingers.clear(); openPack(curPack); }
+
+/* ---------- getting around ---------- */
+$('play').onclick = async () => { sfx.tap(); await ready; drawPacks(); show('packs'); };
+$('toHome').onclick = () => { sfx.tap(); show('home'); };
+$('toPacks').onclick = () => { sfx.tap(); drawPacks(); show('packs'); };
+$('toPages').onclick = () => { sfx.tap(); leavePaint(); };
+
+function layout(){
+  if(!V) return;
+  const work = $('work'), pal = $('pal'), land = innerWidth > innerHeight * 1.05, gap = 10, count = pal.children.length;
+  work.style.flexDirection = land ? 'row' : 'column';
+  const sw = Math.round(Math.max(42, Math.min(64, (land ? innerHeight : innerWidth) / 9)));
+  pal.style.setProperty('--sw', sw + 'px');
+  const room = (land ? work.clientHeight : work.clientWidth) + gap, per = Math.max(1, Math.floor(room / (sw + gap)));
+  const cols = land ? Math.ceil(count / per) : Math.min(count, per);
+  pal.style.gridTemplateColumns = 'repeat(' + cols + ',' + sw + 'px)';
+  pal.style.padding = land ? '0 6px 0 0' : '0 0 4px';
+  const stage = $('stage'), size = Math.max(60, Math.floor(Math.min(stage.clientWidth, stage.clientHeight)));
+  $('paper').style.width = $('paper').style.height = size + 'px';
+}
+addEventListener('resize', layout);
+addEventListener('orientationchange', () => setTimeout(layout, 250));
+document.addEventListener('gesturestart', e => e.preventDefault());
+
+const ready = loadPictures().then(() => { window.READY = true; });
+ready.catch(() => { $('play').style.opacity = .4; });
+if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
