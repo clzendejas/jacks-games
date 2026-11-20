@@ -37,7 +37,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 #hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none;
   padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 16px) 0 calc(env(safe-area-inset-left) + 16px)}
 .chip{pointer-events:auto;background:var(--panel);border-radius:22px;box-shadow:0 5px 0 rgba(22,50,74,.18);padding:10px 16px;display:flex;align-items:center;gap:8px;font-weight:900;font-size:20px;letter-spacing:.04em}
-.chip svg{width:30px;height:30px}
+.chip svg{width:30px;height:30px;flex:none}
+.chip{white-space:nowrap}
+@media (max-width:480px){ .chip{font-size:16px;padding:8px 12px} .chip svg{width:24px;height:24px} }
 #jars{pointer-events:none;background:var(--panel);border-radius:22px;box-shadow:0 5px 0 rgba(22,50,74,.18);padding:10px 14px;display:flex;gap:14px}
 .jar{display:flex;flex-direction:column;align-items:center;gap:6px}
 .jar svg{width:30px;height:30px;color:var(--c)}
@@ -114,6 +116,24 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 #joy .bar{width:min(24vw,120px);height:16px;border-radius:8px;background:rgba(22,50,74,.12);overflow:hidden;display:block}
 #joy .bar i{display:block;height:100%;width:50%;border-radius:8px;background:var(--sun);transition:width .8s}
 #joy.bump{animation:bump .5s}
+.rowchips{display:flex;gap:10px;pointer-events:none}
+#popChip svg{width:26px;height:26px}
+#joyInfo{pointer-events:auto;background:var(--panel);border-radius:20px;box-shadow:0 5px 0 rgba(22,50,74,.18);padding:12px 14px;display:flex;flex-direction:column;gap:10px;width:min(72vw,270px)}
+#joyInfo[hidden]{display:none}
+.why{display:grid;gap:2px}
+.why b{font-size:15px}
+.why span{font-size:12.500px;opacity:.7;line-height:1.25}
+.why i{display:block;height:10px;border-radius:5px;background:rgba(22,50,74,.12);overflow:hidden;margin-top:3px}
+.why u{display:block;height:100%;background:var(--need);border-radius:5px;text-decoration:none}
+#tray.five{gap:8px}
+#tray.five .card{width:min(17.500vw,138px);border-width:5px;border-radius:20px}
+#tray.five .card .tag{width:34px;height:34px;left:-9px;top:-9px;border-width:3px}
+#tray.five .card .tag svg{width:18px;height:18px}
+.card.rd .tag{background:#5b6577}
+.tool{background:var(--panel);border-radius:22px;box-shadow:0 5px 0 rgba(22,50,74,.18);padding:12px 18px;display:flex;align-items:center;gap:10px;font-weight:900;font-size:26px}
+.tool svg{width:40px;height:40px}
+.done{width:96px;height:96px;border-radius:50%;background:var(--need);color:#fff;display:grid;place-items:center;box-shadow:0 7px 0 rgba(22,50,74,.3)}
+.done svg{width:52px;height:52px}
 #left{display:flex;flex-direction:column;gap:10px;align-items:flex-start;pointer-events:none}
 #cityLabel{max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #toCities svg{width:26px;height:26px}
@@ -131,8 +151,15 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <div id="hud">
   <div id="left">
     <button class="chip" id="toCities" aria-label="Save and go to my cities"><span id="cityIcon"></span><span id="cityLabel"></span></button>
-    <div class="chip" id="dayChip"><span id="dayIcon"></span><span id="dayText">DAY 1</span></div>
-    <div class="chip" id="joy" role="img" aria-label="City happiness"><span id="joyFace"></span><span class="bar"><i id="joyFill"></i></span></div>
+    <div class="rowchips"><div class="chip" id="dayChip"><span id="dayIcon"></span><span id="dayText">DAY 1</span></div>
+      <div class="chip" id="popChip" role="img" aria-label="People living here"><span id="popIcon"></span><span id="popText">0</span></div></div>
+    <button class="chip" id="joy" aria-label="City happiness. Tap to see why."><span id="joyFace"></span><span class="bar"><i id="joyFill"></i></span></button>
+    <div id="joyInfo" hidden>
+      <div class="why"><b>Balance</b><span>need, fun and beautiful</span><i><u id="whyB"></u></i></div>
+      <div class="why"><b>Close by</b><span>short walk from homes to food, fun and parks</span><i><u id="whyA"></u></i></div>
+      <div class="why"><b>On the road</b><span>buildings beside, or one back from, one joined-up road network</span><i><u id="whyR"></u></i></div>
+      <div class="why"><b id="whyPop"></b><span>people move in when the city is happy</span></div>
+    </div>
   </div>
   <div id="jars" role="img" aria-label="Need, fun and beautiful jars"></div>
 </div>
@@ -208,11 +235,12 @@ const THINGS={
 const FIRST_GOAL=3, STEP=4;                   // jars need 3 each for the first plot, then 4 more each for every plot after
 
 /* ---------- saved cities: each city is its own world, kept on this device ---------- */
-function fresh(){ return {v:1, day:1, plots:[{painted:Array(N*N).fill(false)}], things:[], jars:{need:0,fun:0,pretty:0}, stage:{need:0,fun:0,pretty:0}, built:false}; }
+function fresh(){ return {v:1, day:1, plots:[{painted:Array(N*N).fill(false)}], things:[], jars:{need:0,fun:0,pretty:0}, stage:{need:0,fun:0,pretty:0}, built:false, roads:{}, pop:0}; }
 function tidy(s){               // fill in anything an older save is missing
   if (!s.jars) s.jars={need:0,fun:0,pretty:0};
   if (!s.stage) s.stage = s.plots.length>1 ? {need:0,fun:0,pretty:0} : Object.assign({},s.jars);
   if (!Array.isArray(s.things)) s.things=[];
+  if (!s.roads) s.roads={};                    // 'x,z' -> 1 (a road Jack drew) or 0 (a path he removed)
   if (s.plots.length>PLOTS.length) s.plots.length=PLOTS.length;
   return s;
 }
@@ -465,8 +493,9 @@ function buildBase(){
     base.add(mesh(rbox(N,.3,N),mat(0x4fb53c),cx,-.3,cz)); base.add(mesh(rbox(N,.7,N),mat(0xa86f3f),cx,-1,cz));
     base.add(mesh(rbox(N-1,.6,N-1),mat(0x8a5a36),cx,-1.6,cz)); base.add(mesh(rbox(N-2.4,.6,N-2.4),mat(0x7a7f8a),cx,-2.2,cz)); });
 }
-function addTile(x,z,num,painted,animate){
-  const t={x,z,num,painted,mesh:null,label:null,thing:null};
+function landNum(x,z,base){ const r=S.roads[x+','+z]; return r===1?2:(r===0?(base===2?1:base):base); }
+function addTile(x,z,base,painted,animate){
+  const num=landNum(x,z,base), t={x,z,num,base,painted,mesh:null,label:null,thing:null};
   setTileLook(t,false);
   if (animate){ t.mesh.position.y=6+Math.random()*3; t.drop={to:0,v:0,delay:(x+z)*.035}; }
   tiles.push(t); tileMap.set(x+','+z,t); return t;
@@ -550,6 +579,8 @@ function applyNight(n){
    ===================================================================== */
 let phase='home', selNum=1, selCard=null, offered=[];
 const plotOf=t=>S.plots.findIndex((p,i)=>t.x>=PLOTS[i].ox && t.x<PLOTS[i].ox+N && t.z>=PLOTS[i].oz && t.z<PLOTS[i].oz+N);
+const ROAD_WORK=12;                           // tiles of road that can be laid or dug up in one road-building day
+const HOMES={1:4, 2:10, 3:24};                // how many people a house, a mansion and an apartment block hold
 const ROADS_AT=4;                              // once a city has this many plots, its paths become roads with traffic
 const roadsOn=()=>S.plots.length>=ROADS_AT;
 const ROAD_CSS='#5b6577';
@@ -593,11 +624,46 @@ const GLYPH={
   pretty:'<svg viewBox="0 0 24 24"><g fill="currentColor"><circle cx="12" cy="6" r="4"/><circle cx="6.300" cy="10.200" r="4"/><circle cx="17.700" cy="10.200" r="4"/><circle cx="8.500" cy="17" r="4"/><circle cx="15.500" cy="17" r="4"/></g><circle cx="12" cy="12" r="3" fill="#fff"/></svg>',
   star:'<svg viewBox="0 0 100 100"><path fill="currentColor" d="M50 6l13 28 31 4-23 21 6 31-27-15-27 15 6-31L6 38l31-4z"/></svg>',
   grow:'<svg class="grow" viewBox="0 0 64 64"><rect x="8" y="38" width="18" height="18" fill="#ffd9a0"/><path d="M5 39l12-10 12 10z" fill="#f0553a"/><rect x="36" y="20" width="22" height="36" fill="#cfe8ff"/><rect x="34" y="15" width="26" height="6" fill="#2f8fff"/><g fill="#ffd66b"><rect x="40" y="26" width="5" height="6"/><rect x="49" y="26" width="5" height="6"/><rect x="40" y="38" width="5" height="6"/><rect x="49" y="38" width="5" height="6"/></g><path d="M22 24h9m-4-4l4 4-4 4" fill="none" stroke="#16324a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  people:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="7" r="3.400"/><path d="M1.500 20c0-4 2.800-6.500 6.500-6.500s6.500 2.500 6.500 6.500z"/><circle cx="17" cy="8.500" r="2.700"/><path d="M15.500 13.700c3.800-.8 7 1.500 7 6.300h-6.300c0-2.600-.2-4.600-.7-6.300z"/></svg>',
+  road:'<svg viewBox="0 0 24 24"><path d="M7 2h10l5 20H2z" fill="currentColor"/><path d="M12 4v3M12 10v4M12 17v4" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg>',
+  roadArt:'<svg class="grow" viewBox="0 0 64 64"><rect x="4" y="24" width="56" height="18" fill="#5b6577"/><rect x="24" y="4" width="18" height="56" fill="#5b6577"/><g fill="#ffd23f"><rect x="8" y="32" width="8" height="2.500"/><rect x="48" y="32" width="8" height="2.500"/><rect x="32" y="8" width="2.500" height="8"/><rect x="32" y="48" width="2.500" height="8"/></g><rect x="44" y="26" width="11" height="6" fill="#f0553a"/><rect x="46" y="23" width="6" height="4" fill="#cfe8ff"/></svg>',
   sun:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="#ffb300"/><g stroke="#ffb300" stroke-width="2.4" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.900 4.900l2.100 2.100M17 17l2.100 2.100M4.900 19.100L7 17M17 7l2.100-2.100"/></g></svg>',
   moon:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 14.500A8.500 8.500 0 019.500 4a8.500 8.500 0 1010.500 10.500z"/></svg>'
 };
-// Happiness: the city is happiest when need, fun and beautiful are in balance (1,1,1 is as happy as 5,5,5).
-function happiness(){ const j=S.jars, lo=Math.min(j.need,j.fun,j.pretty), hi=Math.max(j.need,j.fun,j.pretty); return Math.round(100*(lo+1)/(hi+1)); }
+/* Happiness has three parts:
+   balance   - need, fun and beautiful kept even (1,1,1 is as good as 5,5,5)
+   close by  - how short the walk is from each home to food and water, to fun, and to something beautiful
+   on the road - how many buildings sit beside one joined-up road network
+   A brand new town is judged on balance alone; the other two count more as it grows. */
+let scoreCache=null;
+const stale=()=>{ scoreCache=null; };
+function scores(){
+  if (scoreCache) return scoreCache;
+  const j=S.jars, B=(Math.min(j.need,j.fun,j.pretty)+1)/(Math.max(j.need,j.fun,j.pretty)+1);
+  const built=tiles.filter(t=>t.thing), kindOf=t=>{ const ty=t.thing.userData.type; return ty==='house'?'home':THINGS[ty].kind; };
+  // close by: walk outward from each home and note how far the first of each kind is
+  const homes=built.filter(t=>kindOf(t)==='home'), have={need:false,fun:false,pretty:false}; built.forEach(t=>{ const k=kindOf(t); if (k!=='home') have[k]=true; });
+  let A=0;
+  homes.forEach(hm=>{
+    const found={}, seen=new Set(), q=[]; STEPS.forEach(d=>{ const n=tileAt(hm.x+d[0],hm.z+d[1]); if (canWalk(n)){ seen.add(n); q.push([n,1]); } });
+    for (let i=0;i<q.length && Object.keys(found).length<3;i++){ const c=q[i][0], dist=q[i][1]; if (dist>13) break;
+      STEPS.forEach(d=>{ const n=tileAt(c.x+d[0],c.z+d[1]); if (!n) return;
+        if (n.thing){ const k=kindOf(n); if (k!=='home' && found[k]==null) found[k]=dist; }
+        else if (canWalk(n) && !seen.has(n)){ seen.add(n); q.push([n,dist+1]); } }); }
+    A+=['need','fun','pretty'].reduce((a,k)=>a+(found[k]==null?0:clamp(1-(found[k]-2)/10,0,1)),0)/3;
+  });
+  A=homes.length?A/homes.length:0;
+  // on the road: the biggest joined-up group of road tiles, and how many buildings touch it
+  const roads=tiles.filter(t=>t.painted&&t.num===2), comp=new Map(); let best=null, bestN=0;
+  roads.forEach(r=>{ if (comp.has(r)) return; const id={}, q=[r]; comp.set(r,id); let n=0; while(q.length){ const c=q.pop(); n++; STEPS.forEach(d=>{ const m=tileAt(c.x+d[0],c.z+d[1]); if (m&&m.painted&&m.num===2&&!comp.has(m)){ comp.set(m,id); q.push(m); } }); } if (n>bestN){ bestN=n; best=id; } });
+  const NEAR=[[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2],[1,1],[1,-1],[-1,1],[-1,-1]];      // beside the road, or one building back from it
+  const onRoad=built.filter(t=>best && NEAR.some(d=>{ const m=tileAt(t.x+d[0],t.z+d[1]); return m && comp.get(m)===best; })).length, R=built.length?onRoad/built.length:1;
+  const w=Math.min(1,built.length/12), H=Math.round(100*(B*(1-.5*w)+w*(.3*A+.2*R)));
+  const cap=S.things.reduce((a,o)=>a+(o.t==='house'?HOMES[o.l||1]:0),0);
+  return scoreCache={B,A,R,H,cap};
+}
+const happiness=()=>scores().H;
 function face(h){
   const mouth=h>=75?'<path d="M11 21q7 7 14 0" fill="none" stroke="#3b2b00" stroke-width="2.6" stroke-linecap="round"/>'
              :h>=45?'<path d="M12 23h12" fill="none" stroke="#3b2b00" stroke-width="2.6" stroke-linecap="round"/>'
@@ -606,7 +672,10 @@ function face(h){
 }
 let lastJoy=-1;
 function drawHud(bumped){
-  const joy=happiness(); $('joyFace').innerHTML=face(joy); $('joyFill').style.width=Math.max(6,joy)+'%'; $('joy').setAttribute('aria-label','City happiness '+joy+' percent');
+  stale(); const sc=scores(), joy=sc.H; $('joyFace').innerHTML=face(joy);
+  $('popIcon').innerHTML=GLYPH.people; $('popText').textContent=S.pop||0;
+  $('whyB').style.width=Math.round(sc.B*100)+'%'; $('whyA').style.width=Math.round(sc.A*100)+'%'; $('whyR').style.width=Math.round(sc.R*100)+'%';
+  $('whyPop').textContent=(S.pop||0)+' people, room for '+sc.cap; $('joyFill').style.width=Math.max(6,joy)+'%'; $('joy').setAttribute('aria-label','City happiness '+joy+' percent');
   if (lastJoy>=0 && joy!==lastJoy){ const j=$('joy'); j.classList.remove('bump'); void j.offsetWidth; j.classList.add('bump'); } lastJoy=joy;
   $('dayIcon').innerHTML=GLYPH.sun; $('dayText').textContent='DAY '+S.day; $('cityLabel').textContent=city?city.name:'';
   const tg=target(), st=S.stage, mx=Math.max(st.need,st.fun,st.pretty);
@@ -663,13 +732,16 @@ function deal(){
   else offered=kinds.map(from);
   const tray=$('tray'); tray.innerHTML='';
   if (S.things.length>=6 && upgradable().length) offered.push('upgrade');         // a growing city can also make something it has bigger
-  tray.className=offered.length>3?'four':'';
-  offered.forEach((n,i)=>{ const up=n==='upgrade', k=up?null:THINGS[n].kind, b=document.createElement('button'); b.className='card in'+(up?' up':''); b.style.setProperty('--c',up?'#ffc928':KINDS[k].css); b.style.animationDelay=(i*.08)+'s';
-    b.innerHTML=up?'<span class="tag">'+GLYPH.star+'</span>'+GLYPH.grow:'<span class="tag">'+GLYPH[k]+'</span><img alt="" src="'+thumb(n)+'">'; b.setAttribute('aria-label',up?'Make something bigger':n+' ('+k+')');
+  if (roadsOn()) offered.push('roads');                                             // or spend the day building roads
+  tray.className=offered.length>4?'five':offered.length>3?'four':'';
+  const SPECIAL={upgrade:{c:'#ffc928',cls:' up',tag:GLYPH.star,art:GLYPH.grow,label:'Make something bigger'}, roads:{c:'#5b6577',cls:' rd',tag:GLYPH.road,art:GLYPH.roadArt,label:'Build roads'}};
+  offered.forEach((n,i)=>{ const sp=SPECIAL[n], k=sp?null:THINGS[n].kind, b=document.createElement('button'); b.className='card in'+(sp?sp.cls:''); b.style.setProperty('--c',sp?sp.c:KINDS[k].css); b.style.animationDelay=(i*.08)+'s';
+    b.innerHTML=sp?'<span class="tag">'+sp.tag+'</span>'+sp.art:'<span class="tag">'+GLYPH[k]+'</span><img alt="" src="'+thumb(n)+'">'; b.setAttribute('aria-label',sp?sp.label:n+' ('+k+')');
     b.addEventListener('click',()=>choose(n,b)); tray.appendChild(b); });
 }
 function choose(n,b){
   if (phase!=='pick' && phase!=='place') return;
+  if (n==='roads'){ startRoads(); return; }
   moving=null; selCard=n; phase='place'; sfx.tap();
   [...$('tray').children].forEach(c=>{ c.classList.toggle('sel',c===b); c.classList.toggle('dim',c!==b); c.classList.remove('in'); });
   showRings();
@@ -697,7 +769,7 @@ function finishTurn(k){
 function upgradeOn(t){
   const o=recOf(t); if (!o || (o.l||1)>=topLevel(o.t)){ sfx.no(); return; }
   o.l=(o.l||1)+1; const old=t.thing; world.remove(old); things.splice(things.indexOf(old),1);
-  putThing(o.t,t,o.v,true,o.l); const k=THINGS[o.t].kind; S.jars[k]++; S.stage[k]++; S.built=true; persist(); sfx.win();
+  putThing(o.t,t,o.v,true,o.l); const k=THINGS[o.t].kind; S.jars[k]++; S.stage[k]++; S.built=true; persist(); stale(); sfx.win();
   finishTurn(k); syncPeople();
 }
 function placeOn(t){
@@ -705,14 +777,50 @@ function placeOn(t){
   if (selCard==='upgrade'){ sfx.no(); return; }
   if (!t.painted || t.num!==1 || t.thing){ sfx.no(); return; }
   const k=THINGS[selCard].kind, v=Math.floor(Math.random()*6);
-  putThing(selCard,t,v,true); S.things.push({t:selCard,x:t.x,z:t.z,v}); S.jars[k]++; S.stage[k]++; S.built=true; persist();
+  putThing(selCard,t,v,true); S.things.push({t:selCard,x:t.x,z:t.z,v}); S.jars[k]++; S.stage[k]++; S.built=true; persist(); stale();
   finishTurn(k);
 }
+/* ---------- road building: spend a day drawing roads. Drag over grass or sand to lay road, over road to dig it up.
+   Buildings can still be moved out of the way first (tap one, then tap where it goes). ---------- */
+let roadLeft=0, roadDone=0;
+function rebuildPlot(k){
+  if (landMesh[k]){ world.remove(landMesh[k]); landMesh[k].geometry.dispose(); landMesh[k]=null; }
+  tiles.forEach(t=>{ if (plotOf(t)===k) setTileLook(t,false); }); bakePlot(k);
+}
+function setRoad(t,on){
+  const key=t.x+','+t.z, natural=(t.base===2); if (on===natural) delete S.roads[key]; else S.roads[key]=on?1:0;
+  t.num=landNum(t.x,t.z,t.base);
+  const plots=new Set([plotOf(t)]); STEPS.forEach(d=>{ const n=tileAt(t.x+d[0],t.z+d[1]); if (n){ plots.add(plotOf(n)); if (n.thing) n.thing.rotation.y=facing(n); } });
+  plots.forEach(k=>{ if (k>=0) rebuildPlot(k); });
+}
+function roadTray(){
+  const tray=$('tray'); tray.className=''; tray.innerHTML='';
+  const c=document.createElement('div'); c.className='tool'; c.innerHTML=GLYPH.road+'<span>'+roadLeft+'</span>'; c.setAttribute('aria-label',roadLeft+' road tiles left today'); c.style.color='#5b6577';
+  const d=document.createElement('button'); d.className='done'; d.innerHTML=GLYPH.check; d.setAttribute('aria-label','Finished building roads'); d.addEventListener('click',endRoads);
+  tray.appendChild(c); tray.appendChild(d);
+}
+function startRoads(){ moving=null; selCard=null; clearRings(); phase='roads'; roadLeft=ROAD_WORK; roadDone=0; sfx.tap(); banner('DRAW YOUR ROADS',1600); roadTray(); }
+// returns the kind of change made, or null
+function roadWork(t,mode){
+  if (phase!=='roads' || roadLeft<=0 || !t || !t.painted || t.thing) return null;
+  const isRoad=t.num===2, want=mode||(isRoad?'dig':'lay');
+  if (want==='lay' && (isRoad || t.num===4)) return null;
+  if (want==='dig' && !isRoad) return null;
+  setRoad(t,want==='lay'); roadLeft--; roadDone++; sfx.pop(want==='lay'?3:0); roadTray();
+  if (roadLeft<=0) setTimeout(endRoads,500);
+  return want;
+}
+function endRoads(){
+  if (phase!=='roads') return; moving=null; clearRings();
+  if (!roadDone){ sfx.tap(); deal(); return; }                // changed nothing: the day's choice is still open
+  S.built=true; persist(); syncCars(); drawHud(); sfx.ding(); phase='wait'; $('tray').innerHTML=''; setTimeout(showMoon,700);
+}
+
 /* ---------- tidy up: tap something you built, then tap where it should go (or another building to swap) ---------- */
 let moving=null;
-const canMove=()=>['pick','place','moon'].includes(phase);
+const canMove=()=>['pick','place','moon','roads'].includes(phase);
 function startMove(t){ moving=t; sfx.tap(); showRings(); }
-function endMove(){ moving=null; if (phase==='place' && selCard) showRings(); else clearRings(); }
+function endMove(){ moving=null; if (phase==='place' && selCard) showRings(); else clearRings(); drawHud(); }
 function saveSpot(fromX,fromZ,toX,toZ){ const o=S.things.find(o=>o.x===fromX&&o.z===fromZ); if(o){ o.x=toX; o.z=toZ; } }
 function setOn(g,t){ t.thing=g; if(g){ g.userData.tile=t; g.position.set(t.x+.5,.5,t.z+.5); g.rotation.y=facing(t); g.userData.land=1; } }
 function tapTile(t){
@@ -739,9 +847,14 @@ function tween(ms,fn){ return new Promise(res=>{ const t0=performance.now(); (fu
 async function sleep(){
   if (phase!=='moon') return; moving=null; clearRings(); phase='night'; $('tray').innerHTML=''; sfx.night();
   await tween(1700,applyNight); await wait(1300);
-  S.day++; S.built=false; persist(); drawHud();
+  S.day++; S.built=false;
+  // each morning people move in if the city is happy and has room, and some leave if it is not
+  stale(); const sc=scores(), before=S.pop||0; let now=Math.min(before,sc.cap);
+  if (sc.H>=55) now+=Math.ceil((sc.cap-now)*.35); else if (sc.H<40) now-=Math.ceil(now*.12);
+  S.pop=clamp(now,0,sc.cap); persist(); drawHud();
   sfx.morning(); await tween(1500,t=>applyNight(1-t));
   syncPeople();
+  if (S.pop!==before){ const d=S.pop-before; banner(d>0?'+'+d+(d===1?' PERSON':' PEOPLE')+' MOVED IN':(-d)+(d===-1?' PERSON':' PEOPLE')+' MOVED AWAY',1700); if (d>0) sfx.ding(); await wait(1800); }
   const tg=target(), st=S.stage;
   if (st.need>=tg && st.fun>=tg && st.pretty>=tg && S.plots.length<PLOTS.length){ await newLand(); return; }   // a balanced town earns more land
   deal();
@@ -779,7 +892,8 @@ function findPath(start,goals){
 const heartTex=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'); x.fillStyle='#f25fb0';
   x.beginPath(); x.moveTo(32,54); x.bezierCurveTo(4,34,10,10,32,24); x.bezierCurveTo(54,10,60,34,32,54); x.fill(); const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return t; })();
 function syncPeople(){
-  const want=tiles.some(t=>!t.painted&&plotOf(t)===0)?0:Math.min(16,1+S.things.filter(o=>o.t==='house').reduce((a,o)=>a+(o.l||1),0)+Math.floor(S.things.length/4));
+  const want=tiles.some(t=>!t.painted&&plotOf(t)===0)?0:Math.min(16,2+Math.ceil((S.pop||0)/5));
+  while(people.length>want){ world.remove(people.pop().g); }
   while(people.length<want){ const w=walkable(); if(!w.length) break; const t=pick(w), g=makePerson(people.length+Math.floor(Math.random()*9));
     g.position.set(t.x+.5,.5,t.z+.5);
     const b=new THREE.Sprite(new THREE.SpriteMaterial({map:bubbleTexture('fun'),depthTest:false})); b.scale.set(.5,.5,1); b.position.y=.95; b.visible=false; b.renderOrder=6; g.add(b);
@@ -854,6 +968,7 @@ function syncCars(){
 }
 function moveCars(dt){
   cars.forEach(c=>{
+    if (!(c.to.painted && c.to.num===2)){ const r=roadTiles(); if (!r.length){ c.g.visible=false; return; } const t=pick(r); c.from=c.to=t; c.k=1; c.g.visible=true; c.g.position.set(t.x+.5,.5,t.z+.5); }
     if (c.stop>0){ c.stop-=dt; return; }
     if (c.k>=1){
       const opts=STEPS.map(d=>tileAt(c.to.x+d[0],c.to.z+d[1])).filter(n=>n && n.painted && n.num===2), fwd=opts.filter(n=>n!==c.from);
@@ -904,16 +1019,18 @@ canvas.addEventListener('pointerdown',e=>{
   if (touches.size>2) return;
   const t=tileUnder(e); drag={x:e.clientX,y:e.clientY,moved:false,paint:false,tile:t};
   if (phase==='paint' && t && !t.painted){ drag.paint=true; paintTile(t,true); }
+  if (phase==='roads' && !moving && t && !t.thing){ const m=roadWork(t,null); if (m){ drag.paint=true; drag.road=m; } else { drag.paint=true; drag.road='none'; sfx.no(); } }
 });
 canvas.addEventListener('pointermove',e=>{
   if (touches.has(e.pointerId)) touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if (pinch && touches.size>=2){ const n=pinchState(); setZoom(pinch.zoom*pinch.d/Math.max(20,n.d)); slide(n.x-pinch.x,n.y-pinch.y); pinch.x=n.x; pinch.y=n.y; return; }
   if (!drag) return;
-  if (drag.paint){ const t=tileUnder(e); if (t && t!==drag.tile){ drag.tile=t; paintTile(t,false); } return; }
+  if (drag.paint){ const t=tileUnder(e); if (t && t!==drag.tile){ drag.tile=t; if (drag.road){ if (drag.road!=='none') roadWork(t,drag.road); } else paintTile(t,false); } return; }
   const dx=e.clientX-drag.x; if (Math.abs(dx)>8||drag.moved){ drag.moved=true; cam.theta-=dx*.008; drag.x=e.clientX; }
 });
 const endDrag=e=>{
   touches.delete(e.pointerId); if (pinch){ if (touches.size<2) pinch=null; drag=null; return; }
+  if (drag && drag.road && phase==='roads') persist();
   if (drag && !drag.moved && !drag.paint && phase!=='paint'){ const t=tileUnder(e); if(t) tapTile(t); else if (moving) endMove(); } drag=null;
 };
 canvas.addEventListener('pointerup',endDrag); canvas.addEventListener('pointercancel',e=>{ touches.delete(e.pointerId); pinch=null; drag=null; });
@@ -967,7 +1084,7 @@ function showCities(){
     const card=document.createElement('div'); card.className='city';
     const open=document.createElement('button'); open.style.cssText='display:flex;flex-direction:column;text-align:left;width:100%';
     open.innerHTML=(c.pic?'<img alt="" src="'+c.pic+'">':'<div class="blank"></div>')+'<span class="meta"><span class="nm"></span><span class="dy"></span></span>';
-    open.querySelector('.nm').textContent=c.name; open.querySelector('.dy').textContent='DAY '+c.S.day+'  \u00b7  '+c.S.plots.length+(c.S.plots.length>1?' PLOTS':' PLOT');
+    open.querySelector('.nm').textContent=c.name; open.querySelector('.dy').textContent='DAY '+c.S.day+'  \u00b7  '+(c.S.pop||0)+' PEOPLE';
     open.setAttribute('aria-label','Open '+c.name); open.addEventListener('click',()=>{ sfx.ding(); openCity(c); });
     const ed=document.createElement('button'); ed.className='edit'; ed.innerHTML=PENCIL; ed.setAttribute('aria-label','Rename or delete '+c.name); ed.addEventListener('click',()=>askName(c));
     card.appendChild(open); card.appendChild(ed); list.appendChild(card);
@@ -977,11 +1094,13 @@ function showCities(){
 }
 function openCity(c){
   city=c; S=tidy(c.S); store.current=c.id; persist(); lastJoy=-1;
-  selNum=1; selCard=null; loadWorld(); $('cities').classList.remove('on');
+  selNum=1; selCard=null; loadWorld(); $('cities').classList.remove('on'); $('joyInfo').hidden=true;
+  if (S.pop==null || (S.pop===0 && S.day>3)){ stale(); const sc=scores(); S.pop=Math.round(sc.cap*sc.H/100); persist(); syncPeople(); drawHud(); }   // older saves start with a fair head count
   tiles.some(t=>!t.painted) ? startPaint() : deal();
 }
 function leaveCity(){ if (!city || phase==='night' || phase==='wait') return; sfx.tap(); city.pic=snapshot(); persist(); showCities(); }
 $('toCities').addEventListener('click',leaveCity);
+$('joy').addEventListener('click',()=>{ sfx.tap(); $('joyInfo').hidden=!$('joyInfo').hidden; });
 document.addEventListener('visibilitychange',()=>{ if (document.hidden && city) persist(); });
 
 let naming=null;
