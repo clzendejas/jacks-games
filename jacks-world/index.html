@@ -453,11 +453,11 @@ const rings=[];            // glow markers on tiles you can build on
 
 const labelTex={};
 function numberTexture(n){
-  if (labelTex[n]) return labelTex[n];
+  const key=n+landCss(n); if (labelTex[key]) return labelTex[key];
   const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d');
-  x.fillStyle=LAND[n].css; x.beginPath(); x.arc(64,64,54,0,Math.PI*2); x.fill(); x.lineWidth=8; x.strokeStyle='#fff'; x.stroke();
-  x.fillStyle=LAND[n].dark?'#fff':'#16324a'; x.font='900 76px ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(n,64,70);
-  const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return labelTex[n]=t;
+  x.fillStyle=landCss(n); x.beginPath(); x.arc(64,64,54,0,Math.PI*2); x.fill(); x.lineWidth=8; x.strokeStyle='#fff'; x.stroke();
+  x.fillStyle=landDark(n)?'#fff':'#16324a'; x.font='900 76px ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(n,64,70);
+  const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return labelTex[key]=t;
 }
 function buildBase(){
   while(base.children.length) base.remove(base.children[0]);
@@ -489,7 +489,14 @@ function setTileLook(t,pop){
     brick(g,1,.1,1,0xe8c24a,0,0,0); brick(g,1,.28,1,0,0,.1,0,{mat:waterMat}).castShadow=false; t.bob=Math.random()*6;
   } else {
     const shade=(t.x+t.z)%2, top=t.num===1?(shade?0x46b82c:0x58cc38):t.num===2?(shade?0xd9a860:0xe2b672):(shade?0xffd633:0xffc91f);
-    brick(g,1,.34,1,t.num===3?0xe8c24a:0xa86f3f,0,0,0); brick(g,1,.16,1,top,0,.34,0); t.blank=null;
+    if (t.num===2 && roadsOn()){               // a road: dark surface, pale kerbs along the sides, a yellow dash down the middle
+      const isRoad=(dx,dz)=>{ const n=tileAt(t.x+dx,t.z+dz); return !!n && n.num===2; }, ew=isRoad(-1,0)||isRoad(1,0), ns=isRoad(0,-1)||isRoad(0,1);
+      brick(g,1,.34,1,0x3d4554,0,0,0); brick(g,1,.15,1,0x5b6577,0,.34,0);
+      if (ew && !ns){ brick(g,1,.03,.13,0xd5dbe3,0,.49,-.435); brick(g,1,.03,.13,0xd5dbe3,0,.49,.435); brick(g,.42,.012,.07,0xffd23f,0,.49,0); }
+      else if (ns && !ew){ brick(g,.13,.03,1,0xd5dbe3,-.435,.49,0); brick(g,.13,.03,1,0xd5dbe3,.435,.49,0); brick(g,.07,.012,.42,0xffd23f,0,.49,0); }
+      else [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(c=>brick(g,.13,.03,.13,0xd5dbe3,c[0]*.435,.49,c[1]*.435));   // crossings and corners: kerb blocks at the corners
+    } else { brick(g,1,.34,1,t.num===3?0xe8c24a:0xa86f3f,0,0,0); brick(g,1,.16,1,top,0,.34,0); }
+    t.blank=null;
   }
   g.traverse(o=>{ if(o.isMesh){ o.userData.tile=t; } });
   world.add(g); t.mesh=g;
@@ -506,10 +513,10 @@ const starGeo=new THREE.BufferGeometry(); { const p=[]; for(let i=0;i<260;i++){ 
 const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xffffff,size:.7,transparent:true,opacity:0,sizeAttenuation:true})); scene.add(stars);
 
 /* --- camera: one-finger spin around the island --- */
-const cam={theta:.72, r:20, rTo:20, tx:3, tz:3, txTo:3, tzTo:3};
+const cam={theta:.72, r:20, rTo:20, tx:3, tz:3, txTo:3, tzTo:3, base:20, zoom:1};
 function fitCamera(snap){
   const aspect=innerWidth/innerHeight, B=bounds(), span=Math.max(B.w, B.d*1.15);
-  cam.rTo=span*1.85/Math.min(1.05,Math.max(.34,aspect*.86))+3; cam.txTo=B.cx; cam.tzTo=B.cz;
+  cam.base=span*1.85/Math.min(1.05,Math.max(.34,aspect*.86))+3; cam.zoom=1; cam.rTo=cam.base; cam.txTo=B.cx; cam.tzTo=B.cz;
   const half=Math.max(12,span*.8+3); Object.assign(sun.shadow.camera,{left:-half,right:half,top:half,bottom:-half}); sun.shadow.camera.updateProjectionMatrix();
   if (snap){ cam.r=cam.rTo; cam.tx=cam.txTo; cam.tz=cam.tzTo; }
 }
@@ -543,23 +550,31 @@ function applyNight(n){
    ===================================================================== */
 let phase='home', selNum=1, selCard=null, offered=[];
 const plotOf=t=>S.plots.findIndex((p,i)=>t.x>=PLOTS[i].ox && t.x<PLOTS[i].ox+N && t.z>=PLOTS[i].oz && t.z<PLOTS[i].oz+N);
+const ROADS_AT=4;                              // once a city has this many plots, its paths become roads with traffic
+const roadsOn=()=>S.plots.length>=ROADS_AT;
+const ROAD_CSS='#5b6577';
+const landCss=n=>(n===2&&roadsOn())?ROAD_CSS:LAND[n].css, landDark=n=>LAND[n].dark||(n===2&&roadsOn());
 const target=()=>S.plots.length>1?STEP:FIRST_GOAL;      // how many of each kind this stage asks for
 function bounds(){ const xs=S.plots.map((p,i)=>PLOTS[i].ox), zs=S.plots.map((p,i)=>PLOTS[i].oz);
   const x0=Math.min(...xs), x1=Math.max(...xs)+N, z0=Math.min(...zs), z1=Math.max(...zs)+N; return {w:x1-x0, d:z1-z0, cx:(x0+x1)/2, cz:(z0+z1)/2}; }
 const freeTiles=()=>tiles.filter(t=>t.painted && t.num===1 && !t.thing);
 
-function loadWorld(){
+function loadWorld(snap){
   tiles.forEach(t=>{ if(t.mesh) world.remove(t.mesh); if(t.label) world.remove(t.label); }); tiles.length=0; tileMap.clear();
   landMesh.forEach(m=>{ if(m){ world.remove(m); m.geometry.dispose(); } }); landMesh.length=0;
   things.forEach(g=>world.remove(g)); things.length=0; people.forEach(p=>world.remove(p.g)); people.length=0; clearRings(); moving=null;
+  cars.forEach(c=>world.remove(c.g)); cars.length=0;
   S.plots.forEach((p,i)=>{ const P=PLOTS[i]; for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[P.rows[z][x]],!!p.painted[z*N+x],false); });
   S.plots.forEach((p,i)=>bakePlot(i));
-  buildBase(); fitCamera(true);
+  buildBase(); fitCamera(snap!==false);
   S.things.forEach(o=>{ const t=tileAt(o.x,o.z); if(t) putThing(o.t,t,o.v,false,o.l||1); });
-  syncPeople(); drawHud();
+  syncPeople(); syncCars(); drawHud();
 }
+const TS=1.04;                                // how big buildings are drawn on their tile
+// buildings turn their front toward a path or road next to them, which makes streets look planned
+function facing(t){ const d=[[0,1,0],[1,0,Math.PI/2],[0,-1,Math.PI],[-1,0,-Math.PI/2]].find(d=>{ const n=tileAt(t.x+d[0],t.z+d[1]); return n && n.num===2; }); return d?d[2]:0; }
 function putThing(type,t,v,animate,l){
-  const g=makeThing(type,v,l); g.position.set(t.x+.5,.5,t.z+.5); g.scale.setScalar(1.12);
+  const g=makeThing(type,v,l); g.position.set(t.x+.5,.5,t.z+.5); g.scale.setScalar(TS); g.rotation.y=facing(t);
   world.add(g); things.push(g); t.thing=g; g.userData.tile=t;
   const finish=()=>{ if (g.parent && !g.userData.baked){ g.userData.baked=true; g.children.forEach(p=>{ if(p.userData.y!=null){ p.position.y=p.userData.y; p.userData.fall=null; p.visible=true; } }); bake(g,plainMeshes(g)); } };
   if (animate){
@@ -614,8 +629,8 @@ function startPaint(){
   const left=n=>tiles.filter(t=>!t.painted&&t.num===n).length;
   if (!left(selNum)) selNum=[1,2,3,4].find(left)||1;
   const tray=$('tray'); tray.innerHTML='';
-  [1,2,3,4].forEach(n=>{ const b=document.createElement('button'); b.className='swatch'+(LAND[n].dark?' dark':'')+(n===selNum?' sel':'')+(left(n)?'':' done');
-    b.style.setProperty('--c',LAND[n].css); b.textContent=n; b.setAttribute('aria-label','Color '+n+', '+LAND[n].name);
+  [1,2,3,4].forEach(n=>{ const b=document.createElement('button'); b.className='swatch'+(landDark(n)?' dark':'')+(n===selNum?' sel':'')+(left(n)?'':' done');
+    b.style.setProperty('--c',landCss(n)); b.textContent=n; b.setAttribute('aria-label','Color '+n+', '+LAND[n].name);
     b.addEventListener('click',()=>{ if(!left(n)) return; selNum=n; sfx.tap(); startPaint(); }); tray.appendChild(b); });
 }
 function paintTile(t,direct){
@@ -628,7 +643,7 @@ function paintTile(t,direct){
 }
 async function landDone(){
   phase='wait'; $('tray').innerHTML=''; sfx.win(); confetti(); banner(S.plots.length>1?'NEW LAND!':'YOUR LAND!',2000);
-  syncPeople(); await wait(1300); bakePlot(S.plots.length-1); await wait(900); deal();
+  syncPeople(); await wait(1300); bakePlot(S.plots.length-1); syncCars(); await wait(900); deal();
 }
 
 /* ---------- 2. each morning: pick one of three, then put it on the land ---------- */
@@ -699,7 +714,7 @@ const canMove=()=>['pick','place','moon'].includes(phase);
 function startMove(t){ moving=t; sfx.tap(); showRings(); }
 function endMove(){ moving=null; if (phase==='place' && selCard) showRings(); else clearRings(); }
 function saveSpot(fromX,fromZ,toX,toZ){ const o=S.things.find(o=>o.x===fromX&&o.z===fromZ); if(o){ o.x=toX; o.z=toZ; } }
-function setOn(g,t){ t.thing=g; if(g){ g.userData.tile=t; g.position.set(t.x+.5,.5,t.z+.5); g.userData.land=1; } }
+function setOn(g,t){ t.thing=g; if(g){ g.userData.tile=t; g.position.set(t.x+.5,.5,t.z+.5); g.rotation.y=facing(t); g.userData.land=1; } }
 function tapTile(t){
   if (moving){
     const a=moving, g=a.thing;
@@ -734,8 +749,8 @@ async function sleep(){
 async function newLand(msg){
   phase='wait'; $('tray').innerHTML=''; sfx.win(); confetti(); banner(msg||'ALL THREE JARS FULL!',2200); await wait(2300);
   const i=S.plots.length, P=PLOTS[i]; S.plots.push({painted:Array(N*N).fill(false)}); S.stage={need:0,fun:0,pretty:0}; persist();
-  for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[P.rows[z][x]],false,true);
-  buildBase(); fitCamera(false); drawHud();
+  if (roadsOn()){ const first=S.plots.length===ROADS_AT; loadWorld(false); if (first){ await wait(600); banner('ROADS AND CARS!',2400); sfx.win(); } }
+  else { for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[P.rows[z][x]],false,true); buildBase(); fitCamera(false); drawHud(); }
   await wait(1900); selNum=1; startPaint();
 }
 
@@ -749,19 +764,107 @@ function bubbleTexture(kind){
   else { x.fillStyle='#2f8fff'; x.beginPath(); x.moveTo(64,24); x.lineTo(98,54); x.lineTo(88,54); x.lineTo(88,86); x.lineTo(40,86); x.lineTo(40,54); x.lineTo(30,54); x.closePath(); x.fill(); x.fillStyle='#fff'; x.fillRect(56,62,16,24); }
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return bubbleTex[kind]=t;
 }
-const walkable=()=>tiles.filter(t=>t.painted && t.num!==4 && !t.thing);
+const canWalk=t=>!!t && t.painted && t.num!==4 && !t.thing;
+const walkable=()=>tiles.filter(canWalk);
+const STEPS=[[1,0],[-1,0],[0,1],[0,-1]];
+// shortest walk from one tile to any tile in `goals` (a Set), around buildings and water
+function findPath(start,goals){
+  if (goals.has(start)) return [start];
+  const from=new Map([[start,null]]), q=[start];
+  for (let i=0;i<q.length;i++){ const c=q[i];
+    for (const d of STEPS){ const n=tileAt(c.x+d[0],c.z+d[1]); if (!canWalk(n) || from.has(n)) continue; from.set(n,c);
+      if (goals.has(n)){ const path=[n]; for(let p=c;p;p=from.get(p)) path.push(p); return path.reverse(); } q.push(n); } }
+  return null;
+}
+const heartTex=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'); x.fillStyle='#f25fb0';
+  x.beginPath(); x.moveTo(32,54); x.bezierCurveTo(4,34,10,10,32,24); x.bezierCurveTo(54,10,60,34,32,54); x.fill(); const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return t; })();
 function syncPeople(){
-  const want=tiles.some(t=>!t.painted&&plotOf(t)===0)?0:Math.min(14,1+S.things.filter(o=>o.t==='house').reduce((a,o)=>a+(o.l||1),0)+Math.floor(S.things.length/4));
+  const want=tiles.some(t=>!t.painted&&plotOf(t)===0)?0:Math.min(16,1+S.things.filter(o=>o.t==='house').reduce((a,o)=>a+(o.l||1),0)+Math.floor(S.things.length/4));
   while(people.length<want){ const w=walkable(); if(!w.length) break; const t=pick(w), g=makePerson(people.length+Math.floor(Math.random()*9));
-    g.position.set(t.x+.5,.5,t.z+.5); const b=new THREE.Sprite(new THREE.SpriteMaterial({map:bubbleTexture('fun'),depthTest:false})); b.scale.set(.5,.5,1); b.position.y=.95; b.visible=false; b.renderOrder=6; g.add(b);
-    world.add(g); people.push({g,b,from:t,to:t,k:1,rest:Math.random()*2}); }
+    g.position.set(t.x+.5,.5,t.z+.5);
+    const b=new THREE.Sprite(new THREE.SpriteMaterial({map:bubbleTexture('fun'),depthTest:false})); b.scale.set(.5,.5,1); b.position.y=.95; b.visible=false; b.renderOrder=6; g.add(b);
+    const hrt=new THREE.Sprite(new THREE.SpriteMaterial({map:heartTex,depthTest:false,transparent:true})); hrt.scale.set(.3,.3,1); hrt.visible=false; hrt.renderOrder=6; g.add(hrt);
+    world.add(g); people.push({g,b,hrt,at:t,path:null,i:0,k:0,state:'idle',timer:Math.random()*2,goal:null,side:Math.random()<.5?1:-1}); }
   const lack=lacking(); people.forEach((p,i)=>{ if(lack.length){ const k=lack[i%lack.length]; p.b.material.map=bubbleTexture(k); p.b.visible=i%2===0||people.length<3; p.sad=true; } else { p.b.visible=false; p.sad=false; } });
 }
+// Each person picks somewhere to go (fun places most often), walks there, spends a while, then picks again.
+function chooseTrip(p){
+  const spots=tiles.filter(t=>t.thing); if (!spots.length) return false;
+  for (let tries=0; tries<4; tries++){
+    const bag=[]; spots.forEach(t=>{ const k=THINGS[t.thing.userData.type].kind, w=k==='fun'?4:k==='pretty'?2:1; for(let n=0;n<w;n++) bag.push(t); });
+    const goal=pick(bag); if (goal===p.goal && spots.length>1) continue;
+    const next=new Set(STEPS.map(d=>tileAt(goal.x+d[0],goal.z+d[1])).filter(canWalk)); if (!next.size) continue;
+    const path=findPath(p.at,next); if (!path) continue;
+    p.goal=goal; p.path=path; p.i=0; p.k=0; p.state=path.length>1?'walk':'visit'; if (p.state==='visit') arrive(p); return true;
+  }
+  return false;
+}
+function arrive(p){
+  p.state='visit'; const g=p.goal, kind=g.thing?THINGS[g.thing.userData.type].kind:'need';
+  p.g.rotation.y=Math.atan2(g.x-p.at.x,g.z-p.at.z); p.kind=kind; p.timer=3+Math.random()*3; p.t0=p.timer;
+  if (kind!=='need' && !p.sad){ p.hrt.visible=true; p.hrt.userData.t=0; }
+}
+function walkSpot(p,a,b,k){        // where a walker is between two tiles; on roads they keep to the kerb
+  let x=lerp(a.x,b.x,k)+.5, z=lerp(a.z,b.z,k)+.5;
+  if (roadsOn() && a.num===2 && b.num===2 && a!==b){ const dx=b.x-a.x, dz=b.z-a.z; x+=-dz*.4*p.side; z+=dx*.4*p.side; }
+  return [x,z];
+}
 function movePeople(dt){
+  const asleep=night>.6;
   people.forEach(p=>{
-    if (p.k>=1){ p.rest-=dt; if (p.rest<=0){ const opts=walkable().filter(t=>Math.abs(t.x-p.to.x)+Math.abs(t.z-p.to.z)===1); if(opts.length){ p.from=p.to; p.to=pick(opts); p.k=0; } p.rest=(p.sad?2.5:.6)+Math.random()*2; } return; }
-    p.k=Math.min(1,p.k+dt*(p.sad?.7:1.3)); const x=lerp(p.from.x,p.to.x,p.k)+.5, z=lerp(p.from.z,p.to.z,p.k)+.5;
-    p.g.position.set(x,.5+Math.abs(Math.sin(p.k*Math.PI*2))*(p.sad?.04:.1+happiness()/900),z); p.g.rotation.y=Math.atan2(p.to.x-p.from.x,p.to.z-p.from.z);
+    const g=p.g; g.visible=!asleep && !p.inside;
+    if (p.hrt.visible){ const u=(p.hrt.userData.t+=dt*.7); p.hrt.position.y=.8+u*.7; p.hrt.material.opacity=Math.max(0,1-u); if (u>=1) p.hrt.visible=false; }
+    if (p.state==='idle'){ p.timer-=dt; if (p.timer<=0 && !chooseTrip(p)) p.timer=2; return; }
+    if (p.state==='walk'){
+      const a=p.path[p.i], b=p.path[p.i+1];
+      if (!canWalk(b)){ p.state='idle'; p.timer=.3; return; }            // something was built or moved in the way: think again
+      p.k+=dt*(p.sad?.8:1.7);
+      if (p.k>=1){ p.k=0; p.i++; p.at=b; if (p.i>=p.path.length-1){ arrive(p); return; } }
+      const s=walkSpot(p,p.path[p.i],p.path[p.i+1],p.k), hop=Math.abs(Math.sin(p.k*Math.PI))*(p.sad?.03:.08);
+      g.position.x=lerp(g.position.x,s[0],.35); g.position.z=lerp(g.position.z,s[1],.35); g.position.y=.5+hop;
+      g.rotation.y=Math.atan2(p.path[p.i+1].x-p.path[p.i].x,p.path[p.i+1].z-p.path[p.i].z); g.scale.setScalar(1);
+      return;
+    }
+    // visiting: play at fun places, stroll at pretty ones, pop inside the ones we need
+    p.timer-=dt; const u=1-p.timer/p.t0;
+    if (p.kind==='fun') g.position.y=.5+Math.abs(Math.sin(clock*7+p.side))*(p.sad?.05:.22);
+    else if (p.kind==='pretty'){ g.position.y=.5; g.rotation.y+=dt*1.2; }
+    else { const s=u<.15?1-u/.15:u>.85?(u-.85)/.15:0; g.scale.setScalar(Math.max(.01,s)); p.inside=s<=0; }
+    if (p.timer<=0){ p.inside=false; g.scale.setScalar(1); g.position.y=.5; p.state='idle'; p.timer=.4+Math.random()*1.5; }
+  });
+}
+
+/* ---------- traffic: cars and buses follow the roads once the city is big enough ---------- */
+const cars=[];
+const CAR_COLORS=[0xf0553a,0x2f8fff,0xf25fb0,0xffffff,0x17b8a6,0xb48cff,0xff9a1f];
+function makeCar(bus,i){
+  const g=new THREE.Group(), w=0x2b3140;
+  if (bus){ brick(g,.3,.26,.78,0xffc928,0,.07,0); brick(g,.31,.09,.66,0xcfe8ff,0,.2,0); brick(g,.3,.04,.78,0xffe58a,0,.33,0);
+    [[-.16,.26],[.16,.26],[-.16,-.26],[.16,-.26]].forEach(p=>brick(g,.06,.12,.14,w,p[0],0,p[1])); }
+  else { brick(g,.28,.13,.5,CAR_COLORS[i%CAR_COLORS.length],0,.06,0); brick(g,.24,.11,.24,0xcfe8ff,0,.19,-.03); brick(g,.26,.03,.26,CAR_COLORS[i%CAR_COLORS.length],0,.3,-.03);
+    [[-.15,.15],[.15,.15],[-.15,-.15],[.15,-.15]].forEach(p=>brick(g,.06,.11,.12,w,p[0],0,p[1])); }
+  bake(g,plainMeshes(g)); return g;
+}
+const roadTiles=()=>tiles.filter(t=>t.painted && t.num===2);
+function syncCars(){
+  const roads=roadsOn()?roadTiles():[], want=roads.length<8?0:Math.min(12,2+S.plots.length);
+  while (cars.length>want){ world.remove(cars.pop().g); }
+  while (cars.length<want){ const i=cars.length, bus=i%4===3, t=pick(roads), g=makeCar(bus,i+Math.floor(Math.random()*7)); g.position.set(t.x+.5,.5,t.z+.5); world.add(g);
+    cars.push({g,from:t,to:t,k:1,speed:(bus?1.3:1.9)+Math.random()*.5,stop:0,bus}); }
+}
+function moveCars(dt){
+  cars.forEach(c=>{
+    if (c.stop>0){ c.stop-=dt; return; }
+    if (c.k>=1){
+      const opts=STEPS.map(d=>tileAt(c.to.x+d[0],c.to.z+d[1])).filter(n=>n && n.painted && n.num===2), fwd=opts.filter(n=>n!==c.from);
+      const next=fwd.length?pick(fwd):opts[0]; if (!next){ return; }
+      if (c.bus && Math.random()<.12) c.stop=1.5;                      // buses pause now and then, like stopping for passengers
+      c.from=c.to; c.to=next; c.k=0;
+    }
+    c.k=Math.min(1,c.k+dt*c.speed*(night>.6?.5:1));
+    const dx=c.to.x-c.from.x, dz=c.to.z-c.from.z, x=lerp(c.from.x,c.to.x,c.k)+.5-dz*.19, z=lerp(c.from.z,c.to.z,c.k)+.5+dx*.19;
+    c.g.position.x=lerp(c.g.position.x,x,.3); c.g.position.z=lerp(c.g.position.z,z,.3);
+    let want=Math.atan2(dx,dz), d=want-c.g.rotation.y; while(d>Math.PI) d-=Math.PI*2; while(d<-Math.PI) d+=Math.PI*2; c.g.rotation.y+=d*.25;
   });
 }
 
@@ -787,19 +890,34 @@ function tileUnder(e){
   if (!ray.ray.intersectPlane(ground,spot)) return null;
   return tileAt(Math.floor(spot.x),Math.floor(spot.z))||null;
 }
-let drag=null;
+let drag=null, pinch=null; const touches=new Map();
+function setZoom(z){ cam.zoom=clamp(z,.3,1.15); cam.rTo=cam.base*cam.zoom; }
+function slide(dx,dy){      // move the view across the ground, staying over the city
+  const s=cam.r*.0017, B=bounds(); cam.txTo=clamp(cam.txTo-(Math.cos(cam.theta)*dx+Math.sin(cam.theta)*dy)*s, B.cx-B.w/2, B.cx+B.w/2);
+  cam.tzTo=clamp(cam.tzTo-(-Math.sin(cam.theta)*dx+Math.cos(cam.theta)*dy)*s, B.cz-B.d/2, B.cz+B.d/2);
+}
+function pinchState(){ const p=[...touches.values()]; return {d:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y), x:(p[0].x+p[1].x)/2, y:(p[0].y+p[1].y)/2}; }
 canvas.addEventListener('pointerdown',e=>{
+  touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
+  if (touches.size===2){ drag=null; pinch=Object.assign(pinchState(),{zoom:cam.zoom}); return; }
+  if (touches.size>2) return;
   const t=tileUnder(e); drag={x:e.clientX,y:e.clientY,moved:false,paint:false,tile:t};
   if (phase==='paint' && t && !t.painted){ drag.paint=true; paintTile(t,true); }
-  try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
 });
 canvas.addEventListener('pointermove',e=>{
+  if (touches.has(e.pointerId)) touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if (pinch && touches.size>=2){ const n=pinchState(); setZoom(pinch.zoom*pinch.d/Math.max(20,n.d)); slide(n.x-pinch.x,n.y-pinch.y); pinch.x=n.x; pinch.y=n.y; return; }
   if (!drag) return;
   if (drag.paint){ const t=tileUnder(e); if (t && t!==drag.tile){ drag.tile=t; paintTile(t,false); } return; }
   const dx=e.clientX-drag.x; if (Math.abs(dx)>8||drag.moved){ drag.moved=true; cam.theta-=dx*.008; drag.x=e.clientX; }
 });
-const endDrag=e=>{ if (drag && !drag.moved && !drag.paint && phase!=='paint'){ const t=tileUnder(e); if(t) tapTile(t); else if (moving) endMove(); } drag=null; };
-canvas.addEventListener('pointerup',endDrag); canvas.addEventListener('pointercancel',()=>{drag=null;});
+const endDrag=e=>{
+  touches.delete(e.pointerId); if (pinch){ if (touches.size<2) pinch=null; drag=null; return; }
+  if (drag && !drag.moved && !drag.paint && phase!=='paint'){ const t=tileUnder(e); if(t) tapTile(t); else if (moving) endMove(); } drag=null;
+};
+canvas.addEventListener('pointerup',endDrag); canvas.addEventListener('pointercancel',e=>{ touches.delete(e.pointerId); pinch=null; drag=null; });
+canvas.addEventListener('wheel',e=>{ e.preventDefault(); setZoom(cam.zoom*(e.deltaY>0?1.08:.93)); },{passive:false});
 
 /* ---------- the animation loop ---------- */
 let last=performance.now(), clock=0;
@@ -822,12 +940,12 @@ function frame(now){
     g.children.forEach(p=>{ const f=p.userData.fall; if(!f) return; f.t=Math.min(1,f.t+dt*3.2); const b=1-Math.pow(1-f.t,3); p.position.y=p.userData.y+(1-b)*2.2 + (f.t>.75?Math.sin((f.t-.75)*4*Math.PI)*.04:0); if(f.t>=1){ p.position.y=p.userData.y; p.userData.fall=null; } });
     if (g.userData.spin) g.userData.spin.rotation.z+=dt*1.4;
     const held=moving && moving.thing===g; g.position.y=.5+(held?.4+Math.sin(clock*6)*.05:0);
-    if (g.userData.land){ g.userData.land=Math.max(0,g.userData.land-dt*3); const s=1.12*(1+Math.sin(g.userData.land*Math.PI)*.18); g.scale.set(1.12,s,1.12); }
+    if (g.userData.land){ g.userData.land=Math.max(0,g.userData.land-dt*3); const s=TS*(1+Math.sin(g.userData.land*Math.PI)*.18); g.scale.set(TS,s,TS); }
     if (g.userData.drops) g.userData.drops.forEach((d,i)=>{ const u=(clock*.9+i/6)%1, a=i*1.05; d.position.set(Math.cos(a)*u*.26,.6+Math.sin(u*Math.PI)*.22-u*.38,Math.sin(a)*u*.26); });
   });
   rings.forEach(r=>{ if (r.userData.gem){ r.position.y=r.userData.gem+Math.sin(clock*5+r.userData.ph)*.12; r.rotation.y=clock*2; r.rotation.x=.6; return; } const s=1+.18*Math.sin(clock*5+r.userData.ph); r.scale.set(s,1,s); });
   clouds.forEach((c,i)=>{ c.position.x+=dt*(.12+i*.03); if (c.position.x>30) c.position.x=-20; });
-  movePeople(dt);
+  movePeople(dt); moveCars(dt);
   renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }
