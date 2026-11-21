@@ -70,6 +70,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 @keyframes cardin{from{transform:translateY(120%)}}
 .swatch{width:min(19vw,92px);aspect-ratio:1;border-radius:50%;background:var(--c);border:6px solid #fff;box-shadow:0 6px 0 rgba(22,50,74,.22);
   display:grid;place-items:center;font-size:40px;font-weight:900;color:var(--ink);transition:transform .15s, opacity .2s}
+#tray.many{gap:10px}
+#tray.many .swatch{width:min(15vw,84px);font-size:32px}
 .swatch.sel{transform:translateY(-12px) scale(1.14);box-shadow:0 6px 0 rgba(22,50,74,.22), 0 0 0 6px var(--ink)}
 .swatch.done{opacity:.3;transform:scale(.8)}
 .swatch.dark{color:#fff}
@@ -100,6 +102,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .box input:focus{outline:none;border-color:var(--need)}
 .pill.warn{background:none;color:#a04a00;text-decoration:underline;font-size:15px;padding:6px}
 #nameBox,#ask{background:rgba(22,50,74,.6);z-index:40}
+#landPick{background:rgba(22,50,74,.55);gap:18px}
+#landList{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;width:min(100%,640px)}
+.landcard{background:#fff;border-radius:22px;border:6px solid #fff;box-shadow:0 6px 0 rgba(22,50,74,.25);display:flex;flex-direction:column;align-items:center;padding:6px 6px 10px;font-weight:900;font-size:17px;letter-spacing:.05em;color:var(--ink)}
+.landcard img{width:100%;aspect-ratio:1;object-fit:contain;display:block;pointer-events:none}
+.landcard:active{transform:translateY(3px)}
+@media (max-width:480px){ #landList{grid-template-columns:repeat(2,minmax(0,1fr))} .landcard{font-size:15px} #landPick h1{font-size:30px} }
 #cities{background:linear-gradient(#58b4f5,#bfe6ff 70%,#e9f7ff);justify-content:flex-start;overflow-y:auto;touch-action:pan-y;padding-top:calc(env(safe-area-inset-top) + 28px)}
 #cityList{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;width:min(100%,760px)}
 .city{background:#fff;border-radius:24px;box-shadow:0 6px 0 rgba(22,50,74,.2);overflow:hidden;display:flex;flex-direction:column;text-align:left;position:relative}
@@ -166,6 +174,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <div id="banner"></div>
 <div id="tray"></div>
 
+<div class="screen" id="landPick">
+  <h1>PICK YOUR NEW LAND</h1>
+  <div id="landList"></div>
+</div>
+
 <div class="screen" id="cities">
   <h1>MY CITIES</h1>
   <div id="cityList"></div>
@@ -211,9 +224,20 @@ const LAND={                                 // paint-by-number key
   1:{name:'grass', color:0x6fcf3f, css:'#6fcf3f'},
   2:{name:'path',  color:0xd9a860, css:'#d9a860'},
   3:{name:'sand',  color:0xffe066, css:'#ffe066'},
-  4:{name:'water', color:0x2fa8ff, css:'#2fa8ff', dark:true}
+  4:{name:'water', color:0x2fa8ff, css:'#2fa8ff', dark:true},
+  5:{name:'hill',  color:0x8d99a6, css:'#8d99a6', dark:true},
+  6:{name:'woods', color:0x1f7a3a, css:'#1f7a3a', dark:true}
 };
-const CODE={G:1,P:2,S:3,W:4};
+const CODE={G:1,P:2,S:3,W:4,H:5,T:6};
+// kinds of land Jack can pick for each new plot. Every kind keeps the same cross of paths so plots join up.
+const TERRAIN={
+  meadow:{name:'MEADOW', rows:['GGPGGG','GGPGGG','GGPGGG','GGPGGG','PPPPPP','GGPGGG']},
+  lake:  {name:'LAKE',   rows:['GGPSSS','GGPSWW','GGPSWW','GGPSSS','PPPPPP','GGPGGG']},
+  beach: {name:'BEACH',  rows:['WWWWWW','SSSSSS','GGPGGG','GGPGGG','PPPPPP','GGPGGG']},
+  river: {name:'RIVER',  rows:['GGPWGG','GGPWGG','GGPWGG','GGPWGG','PPPPPP','GGPWGG']},
+  hills: {name:'HILLS',  rows:['GGPHHG','GGPHHH','GGPGHH','GGPGGG','PPPPPP','HGPGGG']},
+  woods: {name:'WOODS',  rows:['TGPGTT','GGPGGT','GGPGGG','TGPGGG','PPPPPP','TTPGGT']}
+};
 // nine plots of land; each new one is added next to the last, spiralling around the first
 const PLOTS=[
   {ox:0,  oz:0,  rows:['GGGGSW','GGGGSW','PPPGSS','GGPGGG','GGPPPP','GGGGGG']},
@@ -493,7 +517,7 @@ function buildBase(){
     base.add(mesh(rbox(N,.3,N),mat(0x4fb53c),cx,-.3,cz)); base.add(mesh(rbox(N,.7,N),mat(0xa86f3f),cx,-1,cz));
     base.add(mesh(rbox(N-1,.6,N-1),mat(0x8a5a36),cx,-1.6,cz)); base.add(mesh(rbox(N-2.4,.6,N-2.4),mat(0x7a7f8a),cx,-2.2,cz)); });
 }
-function landNum(x,z,base){ const r=S.roads[x+','+z]; return r===1?2:(r===0?(base===2?1:base):base); }
+function landNum(x,z,base){ if (base>=4) return base; const r=S.roads[x+','+z]; return r===1?2:(r===0?(base===2?1:base):base); }
 function addTile(x,z,base,painted,animate){
   const num=landNum(x,z,base), t={x,z,num,base,painted,mesh:null,label:null,thing:null};
   setTileLook(t,false);
@@ -507,6 +531,29 @@ function bakePlot(k){
   if (!ms.length) return; landMesh[k]=bake(world,ms); landMesh[k].castShadow=false;
   land.forEach(t=>{ world.remove(t.mesh); t.mesh=null; });
 }
+function landBlocks(g,t){
+  const shade=(t.x+t.z)%2, grass=shade?0x46b82c:0x58cc38, hash=Math.abs((t.x*7+t.z*13)%5);
+  if (t.num===4){ brick(g,1,.1,1,0xe8c24a,0,0,0); brick(g,1,.28,1,0,0,.1,0,{mat:waterMat}).castShadow=false; return; }
+  if (t.num===2 && roadsOn()){               // a road: dark surface, pale kerbs along the sides, a yellow dash down the middle
+    const isRoad=(dx,dz)=>{ const n=tileAt(t.x+dx,t.z+dz); return !!n && n.num===2; }, ew=isRoad(-1,0)||isRoad(1,0), ns=isRoad(0,-1)||isRoad(0,1);
+    brick(g,1,.34,1,0x3d4554,0,0,0); brick(g,1,.15,1,0x5b6577,0,.34,0);
+    if (ew && !ns){ brick(g,1,.03,.13,0xd5dbe3,0,.49,-.435); brick(g,1,.03,.13,0xd5dbe3,0,.49,.435); brick(g,.42,.012,.07,0xffd23f,0,.49,0); }
+    else if (ns && !ew){ brick(g,.13,.03,1,0xd5dbe3,-.435,.49,0); brick(g,.13,.03,1,0xd5dbe3,.435,.49,0); brick(g,.07,.012,.42,0xffd23f,0,.49,0); }
+    else [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(c=>brick(g,.13,.03,.13,0xd5dbe3,c[0]*.435,.49,c[1]*.435));   // crossings and corners: kerb blocks at the corners
+    return;
+  }
+  const top=t.num===2?(shade?0xd9a860:0xe2b672):t.num===3?(shade?0xffd633:0xffc91f):grass;
+  brick(g,1,.34,1,t.num===3?0xe8c24a:0xa86f3f,0,0,0); brick(g,1,.16,1,top,0,.34,0);
+  if (t.num===5){                            // a hill: stacked blocks, taller in some spots, with a snowy cap on the tallest
+    const tall=1+hash%3; brick(g,1,.5,1,shade?0x7fb069:0x8cbf72,0,.5,0);
+    if (tall>=2) brick(g,.78,.42,.78,0x8d99a6,(hash%2?.06:-.06),1,(hash%3?-.05:.05));
+    if (tall>=3){ brick(g,.52,.36,.52,0x9aa6b3,0,1.42,0); brick(g,.34,.16,.34,0xffffff,0,1.78,0); }
+  }
+  if (t.num===6){                            // woods: two or three pine trees
+    const pine=(x,z,s)=>{ brick(g,.1*s,.22*s,.1*s,0x8a5a36,x,.5,z); brick(g,.42*s,.22*s,.42*s,0x1f7a3a,x,.5+.2*s,z); brick(g,.32*s,.2*s,.32*s,0x268a43,x,.5+.42*s,z); brick(g,.2*s,.2*s,.2*s,0x2f9d52,x,.5+.62*s,z); };
+    pine(-.22,-.2,1.25+hash*.08); pine(.24,.18,1.05+((hash+2)%4)*.1); if (hash%2) pine(.22,-.28,.8);
+  }
+}
 function setTileLook(t,pop){
   if (t.mesh){ world.remove(t.mesh); }
   if (t.label){ world.remove(t.label); t.label=null; }
@@ -514,19 +561,7 @@ function setTileLook(t,pop){
   if (!t.painted){
     const m=blankMat(); brick(g,.96,.42,.96,0,0,0,0,{mat:m}); t.blank=m;
     const s=new THREE.Sprite(new THREE.SpriteMaterial({map:numberTexture(t.num),depthTest:false})); s.scale.set(.6,.6,1); s.position.set(t.x+.5,.95,t.z+.5); s.renderOrder=5; world.add(s); t.label=s;
-  } else if (t.num===4){
-    brick(g,1,.1,1,0xe8c24a,0,0,0); brick(g,1,.28,1,0,0,.1,0,{mat:waterMat}).castShadow=false; t.bob=Math.random()*6;
-  } else {
-    const shade=(t.x+t.z)%2, top=t.num===1?(shade?0x46b82c:0x58cc38):t.num===2?(shade?0xd9a860:0xe2b672):(shade?0xffd633:0xffc91f);
-    if (t.num===2 && roadsOn()){               // a road: dark surface, pale kerbs along the sides, a yellow dash down the middle
-      const isRoad=(dx,dz)=>{ const n=tileAt(t.x+dx,t.z+dz); return !!n && n.num===2; }, ew=isRoad(-1,0)||isRoad(1,0), ns=isRoad(0,-1)||isRoad(0,1);
-      brick(g,1,.34,1,0x3d4554,0,0,0); brick(g,1,.15,1,0x5b6577,0,.34,0);
-      if (ew && !ns){ brick(g,1,.03,.13,0xd5dbe3,0,.49,-.435); brick(g,1,.03,.13,0xd5dbe3,0,.49,.435); brick(g,.42,.012,.07,0xffd23f,0,.49,0); }
-      else if (ns && !ew){ brick(g,.13,.03,1,0xd5dbe3,-.435,.49,0); brick(g,.13,.03,1,0xd5dbe3,.435,.49,0); brick(g,.07,.012,.42,0xffd23f,0,.49,0); }
-      else [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(c=>brick(g,.13,.03,.13,0xd5dbe3,c[0]*.435,.49,c[1]*.435));   // crossings and corners: kerb blocks at the corners
-    } else { brick(g,1,.34,1,t.num===3?0xe8c24a:0xa86f3f,0,0,0); brick(g,1,.16,1,top,0,.34,0); }
-    t.blank=null;
-  }
+  } else { landBlocks(g,t); t.blank=null; if (t.num===4) t.bob=Math.random()*6; }
   g.traverse(o=>{ if(o.isMesh){ o.userData.tile=t; } });
   world.add(g); t.mesh=g;
   if (pop){ t.pop=1; }
@@ -585,6 +620,7 @@ const ROADS_AT=4;                              // once a city has this many plot
 const roadsOn=()=>S.plots.length>=ROADS_AT;
 const ROAD_CSS='#5b6577';
 const landCss=n=>(n===2&&roadsOn())?ROAD_CSS:LAND[n].css, landDark=n=>LAND[n].dark||(n===2&&roadsOn());
+const rowsOf=i=>S.plots[i].rows||PLOTS[i].rows;       // the land Jack chose for this plot, or the built-in layout for older plots
 const target=()=>S.plots.length>1?STEP:FIRST_GOAL;      // how many of each kind this stage asks for
 function bounds(){ const xs=S.plots.map((p,i)=>PLOTS[i].ox), zs=S.plots.map((p,i)=>PLOTS[i].oz);
   const x0=Math.min(...xs), x1=Math.max(...xs)+N, z0=Math.min(...zs), z1=Math.max(...zs)+N; return {w:x1-x0, d:z1-z0, cx:(x0+x1)/2, cz:(z0+z1)/2}; }
@@ -595,7 +631,7 @@ function loadWorld(snap){
   landMesh.forEach(m=>{ if(m){ world.remove(m); m.geometry.dispose(); } }); landMesh.length=0;
   things.forEach(g=>world.remove(g)); things.length=0; people.forEach(p=>world.remove(p.g)); people.length=0; clearRings(); moving=null;
   cars.forEach(c=>world.remove(c.g)); cars.length=0;
-  S.plots.forEach((p,i)=>{ const P=PLOTS[i]; for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[P.rows[z][x]],!!p.painted[z*N+x],false); });
+  S.plots.forEach((p,i)=>{ const P=PLOTS[i], rows=rowsOf(i); for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[rows[z][x]],!!p.painted[z*N+x],false); });
   S.plots.forEach((p,i)=>bakePlot(i));
   buildBase(); fitCamera(snap!==false);
   S.things.forEach(o=>{ const t=tileAt(o.x,o.z); if(t) putThing(o.t,t,o.v,false,o.l||1); });
@@ -696,9 +732,11 @@ function confetti(){ if (matchMedia('(prefers-reduced-motion: reduce)').matches)
 function startPaint(){
   phase='paint'; clearRings();
   const left=n=>tiles.filter(t=>!t.painted&&t.num===n).length;
-  if (!left(selNum)) selNum=[1,2,3,4].find(left)||1;
+  const nums=[1,2,3,4,5,6].filter(n=>tiles.some(t=>t.num===n && plotOf(t)===S.plots.length-1));
+  if (!left(selNum)) selNum=nums.find(left)||1;
   const tray=$('tray'); tray.innerHTML='';
-  [1,2,3,4].forEach(n=>{ const b=document.createElement('button'); b.className='swatch'+(landDark(n)?' dark':'')+(n===selNum?' sel':'')+(left(n)?'':' done');
+  tray.className=nums.length>4?'many':'';
+  nums.forEach(n=>{ const b=document.createElement('button'); b.className='swatch'+(landDark(n)?' dark':'')+(n===selNum?' sel':'')+(left(n)?'':' done');
     b.style.setProperty('--c',landCss(n)); b.textContent=n; b.setAttribute('aria-label','Color '+n+', '+LAND[n].name);
     b.addEventListener('click',()=>{ if(!left(n)) return; selNum=n; sfx.tap(); startPaint(); }); tray.appendChild(b); });
 }
@@ -804,7 +842,7 @@ function startRoads(){ moving=null; selCard=null; clearRings(); phase='roads'; r
 function roadWork(t,mode){
   if (phase!=='roads' || roadLeft<=0 || !t || !t.painted || t.thing) return null;
   const isRoad=t.num===2, want=mode||(isRoad?'dig':'lay');
-  if (want==='lay' && (isRoad || t.num===4)) return null;
+  if (want==='lay' && (isRoad || t.num>=4)) return null;      // no roads through water, hills or woods
   if (want==='dig' && !isRoad) return null;
   setRoad(t,want==='lay'); roadLeft--; roadDone++; sfx.pop(want==='lay'?3:0); roadTray();
   if (roadLeft<=0) setTimeout(endRoads,500);
@@ -861,9 +899,10 @@ async function sleep(){
 }
 async function newLand(msg){
   phase='wait'; $('tray').innerHTML=''; sfx.win(); confetti(); banner(msg||'ALL THREE JARS FULL!',2200); await wait(2300);
-  const i=S.plots.length, P=PLOTS[i]; S.plots.push({painted:Array(N*N).fill(false)}); S.stage={need:0,fun:0,pretty:0}; persist();
+  const land=await pickLand();                                   // Jack chooses what kind of land comes next
+  const i=S.plots.length, P=PLOTS[i], rows=TERRAIN[land].rows; S.plots.push({painted:Array(N*N).fill(false), land, rows}); S.stage={need:0,fun:0,pretty:0}; persist();
   if (roadsOn()){ const first=S.plots.length===ROADS_AT; loadWorld(false); if (first){ await wait(600); banner('ROADS AND CARS!',2400); sfx.win(); } }
-  else { for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[P.rows[z][x]],false,true); buildBase(); fitCamera(false); drawHud(); }
+  else { for(let z=0;z<N;z++) for(let x=0;x<N;x++) addTile(P.ox+x,P.oz+z,CODE[rows[z][x]],false,true); buildBase(); fitCamera(false); drawHud(); }
   await wait(1900); selNum=1; startPaint();
 }
 
@@ -877,7 +916,7 @@ function bubbleTexture(kind){
   else { x.fillStyle='#2f8fff'; x.beginPath(); x.moveTo(64,24); x.lineTo(98,54); x.lineTo(88,54); x.lineTo(88,86); x.lineTo(40,86); x.lineTo(40,54); x.lineTo(30,54); x.closePath(); x.fill(); x.fillStyle='#fff'; x.fillRect(56,62,16,24); }
   const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; return bubbleTex[kind]=t;
 }
-const canWalk=t=>!!t && t.painted && t.num!==4 && !t.thing;
+const canWalk=t=>!!t && t.painted && t.num<4 && !t.thing;      // not across water, hills or woods
 const walkable=()=>tiles.filter(canWalk);
 const STEPS=[[1,0],[-1,0],[0,1],[0,-1]];
 // shortest walk from one tile to any tile in `goals` (a Set), around buildings and water
@@ -984,6 +1023,27 @@ function moveCars(dt){
 }
 
 /* ---------- little pictures for the cards, drawn from the real 3D models ---------- */
+// a small picture of each kind of land, drawn from the same blocks the world uses
+const landPics={};
+function landPic(key){
+  const id=key+(roadsOn()?'r':''); if (landPics[id]) return landPics[id];
+  const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true}); r.setSize(320,320,false); r.outputEncoding=THREE.sRGBEncoding;
+  const sc=new THREE.Scene(), cm=new THREE.PerspectiveCamera(26,1,.1,60);
+  sc.add(new THREE.HemisphereLight(0xffffff,0x9fc8ff,.8)); const l=new THREE.DirectionalLight(0xffffff,.9); l.position.set(5,9,6); sc.add(l);
+  TERRAIN[key].rows.forEach((row,z)=>[...row].forEach((ch,x)=>{ const g=new THREE.Group(); g.position.set(x-2.5,0,z-2.5); landBlocks(g,{x:5000+x,z:5000+z,num:CODE[ch]}); sc.add(g); }));
+  const slab=new THREE.Group(); brick(slab,6,.5,6,0xa86f3f,0,-.5,0); sc.add(slab);
+  cm.position.set(9,10.5,12); cm.lookAt(0,.2,0);
+  r.render(sc,cm); const url=r.domElement.toDataURL('image/png'); r.dispose(); if (r.forceContextLoss) r.forceContextLoss();
+  return landPics[id]=url;
+}
+function pickLand(){
+  return new Promise(done=>{
+    const list=$('landList'); list.innerHTML='';
+    Object.keys(TERRAIN).forEach(key=>{ const b=document.createElement('button'); b.className='landcard'; b.innerHTML='<img alt="" src="'+landPic(key)+'"><span></span>'; b.querySelector('span').textContent=TERRAIN[key].name;
+      b.setAttribute('aria-label',TERRAIN[key].name+' land'); b.addEventListener('click',()=>{ sfx.ding(); $('landPick').classList.remove('on'); done(key); }); list.appendChild(b); });
+    $('landPick').classList.add('on');
+  });
+}
 const thumbs={};
 function thumb(type){
   if (thumbs[type]) return thumbs[type];
