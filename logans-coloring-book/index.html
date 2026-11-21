@@ -128,12 +128,17 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 @keyframes hey{50%{transform:scale(1.35) rotate(-8deg)}}
 .sw.eraser{background:#fff;color:var(--line)}
 .sw.eraser svg{width:56%;height:56%}
-#clear{position:relative}
-#clear.holding::before{
-  content:"";position:absolute;inset:-4px;border-radius:50%;border:4px solid var(--sun);
-  clip-path:inset(0 100% 0 0);animation:hold .9s linear forwards;
-}
-@keyframes hold{to{clip-path:inset(0 0 0 0)}}
+/* "start this picture again?" */
+#ask{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:rgba(28,10,56,.86);z-index:25}
+#ask.on{display:flex}
+#ask .what{width:150px;height:150px;border-radius:32px;background:#fff;color:var(--line);display:grid;place-items:center;box-shadow:0 8px 0 rgba(0,0,0,.3)}
+#ask .what svg{width:96px;height:96px}
+#ask .row{display:flex;gap:34px}
+#ask button{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;box-shadow:0 8px 0 rgba(0,0,0,.3)}
+#ask button svg{width:58px;height:58px}
+#ask button:active{transform:translateY(4px)}
+#askYes{background:var(--sun);color:var(--sun-ink)}
+#askNo{background:#fff;color:var(--line)}
 .spark{position:fixed;width:22px;height:22px;pointer-events:none;z-index:30;color:var(--sun);animation:rise .7s ease-out forwards}
 @keyframes rise{from{opacity:1;transform:translate(-50%,-50%) scale(.4)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.4) rotate(50deg)}}
 
@@ -192,11 +197,19 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
         <path d="M3 25a14 14 0 0 1 28 0" stroke="#f2545b"/><path d="M8 25a9 9 0 0 1 18 0" stroke="#ff9a3d"/><path d="M13 25a4 4 0 0 1 8 0" stroke="#5b8cff"/></svg></button>
     </div>
     <button class="small" id="undo" aria-label="Undo"></button>
-    <button class="small" id="clear" aria-label="Hold to start this picture again"></button>
+    <button class="small" id="clear" aria-label="Start this picture again"></button>
   </div>
   <div id="work">
     <div id="stage"><div id="paper"></div></div>
     <div id="pal"></div>
+  </div>
+</div>
+
+<div id="ask">
+  <div class="what" id="askWhat"></div>
+  <div class="row">
+    <button id="askNo" aria-label="No, keep my picture"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button id="askYes" aria-label="Yes, start again"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.5l5 5L19.5 6.5"/></svg></button>
   </div>
 </div>
 
@@ -632,16 +645,18 @@ $('undo').onclick = () => {
   if(V.mode === 'num') pick(V.sel); else drawRegion(u.i);
   saveSoon();
 };
-let holdT = 0;
-function holdEnd(){ clearTimeout(holdT); $('clear').classList.remove('holding'); }
-$('clear').addEventListener('pointerdown', () => {
-  $('clear').classList.add('holding');
-  holdT = setTimeout(() => {
-    holdEnd(); if(!V) return;
-    V.st = {r: {}, done: false}; saveNow(); sfx.pop(); openPage(V.key, V.mode);
-  }, 900);
-});
-for(const ev of ['pointerup', 'pointerleave', 'pointercancel']) $('clear').addEventListener(ev, holdEnd);
+/* start over: a tap asks first (check = yes, X = no), so a stray tap can't wipe a picture */
+$('askWhat').innerHTML = ICON.clear;
+$('clear').onclick = () => {
+  if(!V) return;
+  if(!hasPaint(V.st) && !V.st.done){ sfx.nope(); return; }
+  fingers.clear(); sfx.tap(); $('ask').classList.add('on');
+};
+$('askNo').onclick = () => { sfx.tap(); $('ask').classList.remove('on'); };
+$('askYes').onclick = () => {
+  $('ask').classList.remove('on'); if(!V) return;
+  V.st = {r: {}, done: false}; saveNow(); sfx.pop(); openPage(V.key, V.mode);
+};
 
 $('mNum').onclick = () => { if(V.mode !== 'num'){ sfx.tap(); openPage(V.key, 'num'); } };
 $('mFree').onclick = () => { if(V.mode !== 'free'){ sfx.tap(); openPage(V.key, 'free'); } };
