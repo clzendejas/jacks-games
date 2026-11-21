@@ -19,6 +19,22 @@
    {
     "id": "giraffe",
     "name": "Giraffe"
+   },
+   {
+    "id": "tiger",
+    "name": "Tiger"
+   },
+   {
+    "id": "hippo",
+    "name": "Hippo"
+   },
+   {
+    "id": "penguin",
+    "name": "Penguin"
+   },
+   {
+    "id": "flamingo",
+    "name": "Flamingo"
    }
   ]
  },
@@ -42,6 +58,22 @@
    {
     "id": "carriage",
     "name": "Carriage"
+   },
+   {
+    "id": "fairy",
+    "name": "Fairy princess"
+   },
+   {
+    "id": "mermaid",
+    "name": "Mermaid princess"
+   },
+   {
+    "id": "snow-princess",
+    "name": "Snow princess"
+   },
+   {
+    "id": "frog-prince",
+    "name": "Frog prince"
    }
   ]
  },

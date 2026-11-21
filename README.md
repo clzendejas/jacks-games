@@ -11,7 +11,7 @@ that also installs as its own app and works offline.
 | Rainbow Bottles | [Play](https://clzendejas.github.io/jacks-games/rainbow-bottles/) | Pour colors between bottles until every bottle holds one color. |
 | Jack's Reading Adventures | [Play](https://clzendejas.github.io/jacks-games/reading-adventures/) | Learn to read in small steps. First adventure: Sound Pals, where letter pals say their sounds. Word Slide (blending) and Word Builder (spelling) are coming. |
 | Jack's World | [Play](https://clzendejas.github.io/jacks-games/jacks-world/) | A blocky 3D town builder. Paint the land by number, then build one thing a day: something needed, something fun, or something beautiful. |
-| Logan's Coloring Book | [Play](https://clzendejas.github.io/jacks-games/logans-coloring-book/) | Twenty pictures in five books (zoo animals, princesses, unicorns, under the sea, yummy treats). Paint by numbers, or color freely. Paint stays inside the lines. |
+| Logan's Coloring Book | [Play](https://clzendejas.github.io/jacks-games/logans-coloring-book/) | Twenty-eight pictures in five books (zoo animals, princesses, unicorns, under the sea, yummy treats). Paint by numbers, or color freely. Paint stays inside the lines. |
 
 ## Install on a tablet or phone
 

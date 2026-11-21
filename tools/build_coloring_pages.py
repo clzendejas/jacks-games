@@ -656,9 +656,247 @@ def cake():
     return p
 
 
+# ---------- more zoo ----------
+def tiger():
+    p = Page("Tiger")
+    OR, DARK = ORANGE, "#5a3a22"
+    p.r(SKY, -10, -10, 620, 620)
+    p.p(GRASS, hill(480))
+    p.e(LEAF, 60, 50, 120, 42, -28)
+    p.e(LEAF, 545, 55, 120, 42, 28)
+    p.p(OR, tube([(390, 505), (470, 512), (508, 452), (492, 395)], 20))
+    p.e(DARK, 489, 378, 15, 24, -12)
+    p.e(OR, 300, 468, 108, 90)
+    p.e(OR, 222, 542, 46, 26)
+    p.e(OR, 378, 542, 46, 26)
+    p.e(CREAM, 300, 488, 56, 56)
+    p.r(OR, 258, 452, 38, 104, 19)
+    p.r(OR, 304, 452, 38, 104, 19)
+    p.ln("M262 490 h14 M262 512 h14 M324 490 h14 M324 512 h14", 5)
+    for x in (200, 400):
+        p.c(OR, x, 132, 38)
+        p.c(PINK, x, 132, 18)
+    p.c(OR, 300, 245, 125)
+    p.p(DARK, "M282 132 L300 180 L318 132Z")
+    for s_ in (1, -1):
+        m = lambda x: 300 + s_ * (x - 300)
+        p.p(DARK, f"M{m(183)} 214 L{m(228)} 232 L{m(183)} 250Z")
+        p.p(DARK, f"M{m(188)} 276 L{m(228)} 288 L{m(198)} 306Z")
+    p.e(CREAM, 300, 300, 70, 50)
+    p.p(PINK, "M278 266 Q300 258 322 266 Q318 286 300 292 Q282 286 278 266Z")
+    p.ln("M300 292 V306 M300 306 Q282 328 264 310 M300 306 Q318 328 336 310")
+    p.eye(252, 226, 13)
+    p.eye(348, 226, 13)
+    return p
+
+
+def hippo():
+    p = Page("Hippo")
+    HIP, SNOUT = "#b79ad6", "#d6c2ee"
+    p.r(SKY, -10, -10, 620, 620)
+    p.c(SUN, 90, 85, 46)
+    cloud(p, 470, 90)
+    p.p(LEAF, tube([(540, 560), (552, 470), (530, 400), (548, 330)], 24, 10))
+    p.p(LEAF, tube([(62, 560), (48, 480), (72, 420), (56, 360)], 24, 10))
+    p.e(HIP, 300, 440, 175, 120)
+    for x in (212, 388):
+        p.c(HIP, x, 168, 32)
+        p.c(PINK, x, 168, 16)
+    p.e(HIP, 300, 240, 122, 104)
+    p.r(CREAM, 258, 396, 30, 44, 8)
+    p.r(CREAM, 312, 396, 30, 44, 8)
+    p.e(SNOUT, 300, 335, 165, 92)
+    p.ln("M252 296 v8 M348 296 v8", 14)
+    p.ln("M205 362 Q300 412 395 362", 5)
+    p.c(PINK, 178, 340, 17)
+    p.c(PINK, 422, 340, 17)
+    p.eye(256, 208, 13)
+    p.eye(344, 208, 13)
+    p.p(WATER, "M-10 505 Q45 482 100 505 T210 505 T320 505 T430 505 T540 505 T650 505 V610 H-10Z")
+    return p
+
+
+def penguin():
+    p = Page("Penguin")
+    NAVY = "#4a568f"
+    p.r(SKY, -10, -10, 620, 620)
+    p.p(LAV, "M-10 470 L70 330 L150 470Z")
+    p.p(LAV, "M430 470 L520 300 L620 470Z")
+    p.p(CLOUD, hill(480, 30))
+    for x, y in ((90, 120), (500, 110), (80, 250), (530, 230)):
+        p.ln(f"M{x - 16} {y} h32 M{x} {y - 16} v32 M{x - 11} {y - 11} l22 22 M{x - 11} {y + 11} l22 -22", 4)
+    p.e(ORANGE, 248, 528, 52, 22)
+    p.e(ORANGE, 352, 528, 52, 22)
+    p.e(NAVY, 162, 370, 34, 92, 22)
+    p.e(NAVY, 438, 370, 34, 92, -22)
+    p.e(NAVY, 300, 350, 136, 180)
+    p.e(CREAM, 300, 378, 96, 142)
+    p.eye(262, 272, 13)
+    p.eye(338, 272, 13)
+    p.p(ORANGE, "M276 292 Q300 282 324 292 Q300 326 276 292Z")
+    p.c(PINK, 236, 300, 13)
+    p.c(PINK, 364, 300, 13)
+    p.r(RED, 362, 350, 36, 86, 10)
+    p.r(RED, 178, 334, 244, 36, 18)
+    p.p(TEAL, "M222 206 Q228 112 300 110 Q372 112 378 206Z")
+    p.r(HOT, 212, 190, 176, 30, 15)
+    p.c(HOT, 300, 100, 24)
+    return p
+
+
+def flamingo():
+    p = Page("Flamingo")
+    FL, DARK = "#ff8fb8", "#5a3a22"
+    p.r(SKY, -10, -10, 620, 620)
+    p.c(SUN, 500, 90, 48)
+    cloud(p, 95, 240, 0.9)
+    p.p(LEAF, tube([(548, 560), (560, 480), (536, 420), (552, 350)], 24, 10))
+    p.r(FL, 296, 395, 14, 160, 7)
+    p.p(FL, tube([(352, 400), (372, 462), (334, 492)], 14))
+    p.e(HOT, 458, 318, 46, 20, -28)
+    p.p(FL, tube([(250, 322), (188, 258), (212, 176), (258, 136), (250, 96)], 38, 28))
+    p.e(FL, 335, 335, 124, 86, -8)
+    p.e(HOT, 358, 332, 78, 50, -8)
+    p.ln("M312 340 Q352 372 412 340", 4)
+    p.p(SUN, "M222 68 L158 88 Q162 124 190 120 L226 100Z")
+    p.p(DARK, "M178 82 L158 88 Q162 124 190 120Z")
+    p.c(FL, 248, 82, 36)
+    p.eye(244, 76, 10)
+    p.c(HOT, 262, 98, 9)
+    p.p(WATER, "M-10 525 Q45 502 100 525 T210 525 T320 525 T430 525 T540 525 T650 525 V610 H-10Z")
+    return p
+
+
+# ---------- more princesses ----------
+def _face(p, SKIN, HAIR, cy=205):
+    p.c(SKIN, 300, cy, 80)
+    p.p(HAIR, f"M221 {cy + 7} Q214 {cy - 85} 300 {cy - 87} Q386 {cy - 85} 379 {cy + 7} Q352 {cy - 53} 300 {cy - 41} Q248 {cy - 53} 221 {cy + 7}Z")
+    p.eye(272, cy + 7, 11)
+    p.eye(328, cy + 7, 11)
+    p.c(PINK, 250, cy + 31, 13)
+    p.c(PINK, 350, cy + 31, 13)
+    p.smile(300, cy + 35, 22, 18)
+
+
+def fairy():
+    p = Page("Fairy princess")
+    SKIN, HAIR, WING = "#e9a877", "#3b2a20", "#bfe8ff"
+    p.r("#c9f5e6", -10, -10, 620, 620)
+    p.p(GRASS, hill(545, 30))
+    for x, y, col in ((80, 500, HOT), (525, 505, PURPLE)):
+        p.ln(f"M{x} {y} V560", 5)
+        p.p(col, scallop(x, y, 28, 28, 5, start=-math.pi / 2))
+        p.c(SUN, x, y, 11)
+    p.e(WING, 185, 275, 95, 62, -25)
+    p.e(WING, 415, 275, 95, 62, 25)
+    p.e(WING, 212, 375, 62, 40, 20)
+    p.e(WING, 388, 375, 62, 40, -20)
+    p.c(HAIR, 226, 138, 36)
+    p.c(HAIR, 374, 138, 36)
+    p.e(HAIR, 300, 215, 94, 96)
+    p.r(SKIN, 266, 470, 24, 82, 11)
+    p.r(SKIN, 310, 470, 24, 82, 11)
+    p.e(HOT, 276, 556, 24, 13)
+    p.e(HOT, 324, 556, 24, 13)
+    p.p(SKIN, tube([(254, 308), (204, 348), (178, 326)], 24))
+    p.p(TEAL, "M250 330 Q200 420 168 478 Q194 502 216 480 Q240 506 262 482 Q300 512 338 482 Q360 506 384 480 Q406 502 432 478 Q400 420 350 330Z")
+    p.ln("M440 300 L474 236", 7)
+    p.p(SUN, star(482, 216, 34))
+    p.p(SKIN, tube([(346, 308), (410, 330), (442, 296)], 24))
+    p.p(HOT, "M256 288 Q300 304 344 288 L358 342 Q300 358 242 342Z")
+    _face(p, SKIN, HAIR)
+    p.p(GOLD, "M262 124 L266 84 L284 106 L300 72 L316 106 L334 84 L338 124Z")
+    return p
+
+
+def mermaid():
+    p = Page("Mermaid princess")
+    SKIN, HAIR = "#f3bb8f", "#3b2a20"
+    _sea(p, 545)
+    p.p(LEAF, tube([(70, 570), (52, 490), (88, 430), (64, 360)], 26, 12))
+    p.c(CLOUD, 520, 120, 22)
+    p.c(CLOUD, 548, 60, 14)
+    p.c(CLOUD, 90, 110, 16)
+    p.p(SUN, star(130, 555, 30, 13))
+    p.e(HAIR, 300, 260, 118, 150)
+    p.e(TEAL, 478, 452, 52, 24, -42)
+    p.e(TEAL, 486, 528, 52, 24, 36)
+    p.p(HOT, tube([(300, 345), (308, 430), (362, 492), (446, 492)], 116, 34))
+    p.ln("M282 420 q14 12 28 0 M318 432 q14 12 28 0 M302 462 q14 12 28 0 M344 478 q14 12 28 0", 4)
+    p.p(SKIN, tube([(254, 305), (212, 352), (222, 404)], 24))
+    p.p(SKIN, tube([(346, 305), (404, 318), (436, 276)], 24))
+    p.p(SKIN, "M256 288 Q300 300 344 288 L354 352 Q300 366 246 352Z")
+    p.p(SUN, "M254 288 Q300 304 346 288 L350 324 Q300 338 250 324Z")
+    p.e(TEAL, 300, 356, 60, 17)
+    _face(p, SKIN, HAIR)
+    p.p(GOLD, "M262 124 L266 84 L284 106 L300 72 L316 106 L334 84 L338 124Z")
+    p.c(HOT, 300, 106, 9)
+    return p
+
+
+def snow_princess():
+    p = Page("Snow princess")
+    SKIN, HAIR, ICE = "#f6cfa8", "#8a5a34", "#c5cce0"
+    p.r(SKY, -10, -10, 620, 620)
+    p.p(CLOUD, hill(520, 30))
+    for x, y in ((80, 110), (520, 100), (60, 300), (540, 290), (480, 200)):
+        p.ln(f"M{x - 16} {y} h32 M{x} {y - 16} v32 M{x - 11} {y - 11} l22 22 M{x - 11} {y + 11} l22 -22", 4)
+    p.r(BROWN, 100, 440, 22, 60)
+    p.p(LEAF, "M111 300 L60 400 H162Z")
+    p.p(LEAF, "M111 350 L48 460 H174Z")
+    p.e(HAIR, 300, 225, 100, 112)
+    p.p(BLUE, "M236 300 Q132 420 108 556 Q300 588 492 556 Q468 420 364 300Z")
+    p.p(LAV, "M264 330 Q244 450 230 562 Q300 576 370 562 Q356 450 336 330Z")
+    p.p(CLOUD, "M108 556 Q300 588 492 556 L500 582 Q300 618 100 582Z")
+    p.p(BLUE, tube([(252, 318), (214, 380), (226, 438)], 30))
+    p.p(BLUE, tube([(348, 318), (386, 380), (374, 438)], 30))
+    p.c(HOT, 228, 452, 20)
+    p.c(HOT, 372, 452, 20)
+    p.e(CLOUD, 300, 302, 78, 24)
+    _face(p, SKIN, HAIR)
+    p.p(ICE, "M258 124 L262 80 L282 104 L300 62 L318 104 L338 80 L342 124Z")
+    p.p(BLUE, poly(300, 102, 11, 4, 0))
+    return p
+
+
+def frog_prince():
+    p = Page("Frog prince")
+    FROG, BELLY = "#7ed957", "#d9f7a8"
+    p.r(SKY, -10, -10, 620, 620)
+    p.c(SUN, 510, 85, 46)
+    cloud(p, 120, 90, 0.9)
+    p.p(WATER, "M-10 425 Q45 402 100 425 T210 425 T320 425 T430 425 T540 425 T650 425 V610 H-10Z")
+    for x, top in ((62, 250), (104, 300)):
+        p.ln(f"M{x} 430 V{top + 30}", 5)
+        p.e(BROWN, x, top, 13, 36)
+    p.e(LEAF, 300, 520, 225, 62)
+    p.ln("M300 520 L430 482", 5)
+    p.p(PINK, scallop(505, 440, 36, 30, 6, start=0.3))
+    p.c(SUN, 505, 440, 13)
+    p.e(FROG, 182, 478, 74, 38, -18)
+    p.e(FROG, 418, 478, 74, 38, 18)
+    p.e(FROG, 300, 430, 122, 98)
+    p.e(BELLY, 300, 452, 76, 64)
+    p.e(FROG, 248, 516, 38, 17)
+    p.e(FROG, 352, 516, 38, 17)
+    p.p(GOLD, "M258 212 L250 138 L282 172 L300 124 L318 172 L350 138 L342 212Z")
+    p.c(RED, 300, 186, 10)
+    p.c(FROG, 222, 236, 50)
+    p.c(FROG, 378, 236, 50)
+    p.e(FROG, 300, 308, 140, 96)
+    p.bigeye(222, 232, 30)
+    p.bigeye(378, 232, 30)
+    p.ln("M212 322 Q300 388 388 322", 5)
+    p.c(PINK, 196, 318, 15)
+    p.c(PINK, 404, 318, 15)
+    return p
+
+
 PACKS = [
-    ("zoo", "Zoo animals", "#86d95b", [("lion", lion), ("monkey", monkey), ("elephant", elephant), ("giraffe", giraffe)]),
-    ("princesses", "Princesses", "#ff6fae", [("princess", princess), ("castle", castle), ("crown", crown), ("carriage", carriage)]),
+    ("zoo", "Zoo animals", "#86d95b", [("lion", lion), ("monkey", monkey), ("elephant", elephant), ("giraffe", giraffe),
+                                    ("tiger", tiger), ("hippo", hippo), ("penguin", penguin), ("flamingo", flamingo)]),
+    ("princesses", "Princesses", "#ff6fae", [("princess", princess), ("castle", castle), ("crown", crown), ("carriage", carriage),
+                                             ("fairy", fairy), ("mermaid", mermaid), ("snow-princess", snow_princess), ("frog-prince", frog_prince)]),
     ("unicorns", "Unicorns", "#a97bff", [("unicorn", unicorn), ("flower-unicorn", unicorn_face), ("rainbow", rainbow), ("flying-unicorn", flying_unicorn)]),
     ("sea", "Under the sea", "#3fd0c0", [("fish", fish), ("octopus", octopus), ("turtle", turtle), ("whale", whale)]),
     ("treats", "Yummy treats", "#ff9a3d", [("cupcake", cupcake), ("ice-cream", icecream), ("donut", donut), ("cake", cake)]),

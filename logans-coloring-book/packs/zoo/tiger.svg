@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Tiger" data-palette="1:#9ad8ff 2:#86d95b 3:#4fbf6b 4:#ff9a3d 5:#5a3a22 6:#ffe9c4 7:#ffa3c8" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<path d="M-10 480 Q300 440 610 480 V610 H-10Z" data-n="2"/>
+<ellipse cx="60" cy="50" rx="120" ry="42" data-n="3" transform="rotate(-28 60 50)"/>
+<ellipse cx="545" cy="55" rx="120" ry="42" data-n="3" transform="rotate(28 545 55)"/>
+<path d="M388.6 514.9 L393.2 515.6 L399.5 516.8 L407.4 518.5 L416.3 520.3 L426 522.1 L436 523.6 L446 524.6 L455.8 524.8 L465.2 523.8 L473.9 521.2 L481.5 516.9 L488 511.5 L493.9 505.2 L499.1 498.3 L503.7 491 L507.7 483.4 L511.1 475.7 L514 468.1 L516.2 460.8 L517.9 453.6 L518.5 445.9 L517.9 438.1 L516.4 430.5 L514.2 423.1 L511.7 416.2 L509 409.7 L506.5 403.8 L504.2 398.7 L502.5 394.7 L501.4 391.7 A10 10 0 0 0 482.6 398.3 L482.6 398.3 L483.9 402 L485.9 406.7 L488.2 411.9 L490.6 417.4 L493 423.3 L495.2 429.4 L497 435.3 L498.1 440.9 L498.5 445.9 L498.1 450.4 L496.9 455.6 L495.1 461.6 L492.6 468.1 L489.7 474.6 L486.3 481 L482.6 487 L478.5 492.4 L474.3 497 L470 500.5 L466.1 502.8 L461.5 504.2 L455 504.8 L447.2 504.6 L438.4 503.8 L429.3 502.4 L420.2 500.7 L411.5 498.9 L403.6 497.2 L396.7 495.9 L391.4 495.1 A10 10 0 0 0 388.6 514.9Z" data-n="4"/>
+<ellipse cx="489" cy="378" rx="15" ry="24" data-n="5" transform="rotate(-12 489 378)"/>
+<ellipse cx="300" cy="468" rx="108" ry="90" data-n="4"/>
+<ellipse cx="222" cy="542" rx="46" ry="26" data-n="4"/>
+<ellipse cx="378" cy="542" rx="46" ry="26" data-n="4"/>
+<ellipse cx="300" cy="488" rx="56" ry="56" data-n="6"/>
+<rect x="258" y="452" width="38" height="104" rx="19" data-n="4"/>
+<rect x="304" y="452" width="38" height="104" rx="19" data-n="4"/>
+<path d="M262 490 h14 M262 512 h14 M324 490 h14 M324 512 h14" class="ln" fill="none" stroke-width="5"/>
+<circle cx="200" cy="132" r="38" data-n="4"/>
+<circle cx="200" cy="132" r="18" data-n="7"/>
+<circle cx="400" cy="132" r="38" data-n="4"/>
+<circle cx="400" cy="132" r="18" data-n="7"/>
+<circle cx="300" cy="245" r="125" data-n="4"/>
+<path d="M282 132 L300 180 L318 132Z" data-n="5"/>
+<path d="M183 214 L228 232 L183 250Z" data-n="5"/>
+<path d="M188 276 L228 288 L198 306Z" data-n="5"/>
+<path d="M417 214 L372 232 L417 250Z" data-n="5"/>
+<path d="M412 276 L372 288 L402 306Z" data-n="5"/>
+<ellipse cx="300" cy="300" rx="70" ry="50" data-n="6"/>
+<path d="M278 266 Q300 258 322 266 Q318 286 300 292 Q282 286 278 266Z" data-n="7"/>
+<path d="M300 292 V306 M300 306 Q282 328 264 310 M300 306 Q318 328 336 310" class="ln" fill="none" stroke-width="5"/>
+<circle cx="252" cy="226" r="13" data-fix="1" fill="#33263f" stroke="none"/>
+<circle cx="256.2" cy="221.3" r="4.4" data-fix="1" fill="#ffffff" stroke="none"/>
+<circle cx="348" cy="226" r="13" data-fix="1" fill="#33263f" stroke="none"/>
+<circle cx="352.2" cy="221.3" r="4.4" data-fix="1" fill="#ffffff" stroke="none"/>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" data-title="Penguin" data-palette="1:#9ad8ff 2:#dccfff 3:#e4f3ff 4:#ff9a3d 5:#4a568f 6:#ffe9c4 7:#ffa3c8 8:#f2545b 9:#3fd0c0 10:#ff6fae" fill="#ffffff" stroke="#33263f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-10" y="-10" width="620" height="620" rx="0" data-n="1"/>
+<path d="M-10 470 L70 330 L150 470Z" data-n="2"/>
+<path d="M430 470 L520 300 L620 470Z" data-n="2"/>
+<path d="M-10 480 Q300 450 610 480 V610 H-10Z" data-n="3"/>
+<path d="M74 120 h32 M90 104 v32 M79 109 l22 22 M79 131 l22 -22" class="ln" fill="none" stroke-width="4"/>
+<path d="M484 110 h32 M500 94 v32 M489 99 l22 22 M489 121 l22 -22" class="ln" fill="none" stroke-width="4"/>
+<path d="M64 250 h32 M80 234 v32 M69 239 l22 22 M69 261 l22 -22" class="ln" fill="none" stroke-width="4"/>
+<path d="M514 230 h32 M530 214 v32 M519 219 l22 22 M519 241 l22 -22" class="ln" fill="none" stroke-width="4"/>
+<ellipse cx="248" cy="528" rx="52" ry="22" data-n="4"/>
+<ellipse cx="352" cy="528" rx="52" ry="22" data-n="4"/>
+<ellipse cx="162" cy="370" rx="34" ry="92" data-n="5" transform="rotate(22 162 370)"/>
+<ellipse cx="438" cy="370" rx="34" ry="92" data-n="5" transform="rotate(-22 438 370)"/>
+<ellipse cx="300" cy="350" rx="136" ry="180" data-n="5"/>
+<ellipse cx="300" cy="378" rx="96" ry="142" data-n="6"/>
+<circle cx="262" cy="272" r="13" data-fix="1" fill="#33263f" stroke="none"/>
+<circle cx="266.2" cy="267.3" r="4.4" data-fix="1" fill="#ffffff" stroke="none"/>
+<circle cx="338" cy="272" r="13" data-fix="1" fill="#33263f" stroke="none"/>
+<circle cx="342.2" cy="267.3" r="4.4" data-fix="1" fill="#ffffff" stroke="none"/>
+<path d="M276 292 Q300 282 324 292 Q300 326 276 292Z" data-n="4"/>
+<circle cx="236" cy="300" r="13" data-n="7"/>
+<circle cx="364" cy="300" r="13" data-n="7"/>
+<rect x="362" y="350" width="36" height="86" rx="10" data-n="8"/>
+<rect x="178" y="334" width="244" height="36" rx="18" data-n="8"/>
+<path d="M222 206 Q228 112 300 110 Q372 112 378 206Z" data-n="9"/>
+<rect x="212" y="190" width="176" height="30" rx="15" data-n="10"/>
+<circle cx="300" cy="100" r="24" data-n="10"/>
+</svg>

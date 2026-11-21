@@ -1,4 +1,4 @@
-const CACHE='logans-coloring-book-v2';
+const CACHE='logans-coloring-book-v3';
 const FILES=['./','index.html','logan.webp','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','packs/packs.json'];
 // Save the app shell, then every picture listed in packs.json, so the whole book works offline.
 self.addEventListener('install',e=>{e.waitUntil((async()=>{
