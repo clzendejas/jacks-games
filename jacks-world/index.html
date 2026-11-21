@@ -164,7 +164,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <button class="chip" id="joy" aria-label="City happiness. Tap to see why."><span id="joyFace"></span><span class="bar"><i id="joyFill"></i></span></button>
     <div id="joyInfo" hidden>
       <div class="why"><b>Balance</b><span>need, fun and beautiful</span><i><u id="whyB"></u></i></div>
-      <div class="why"><b>Close by</b><span>short walk from homes to food, fun and parks</span><i><u id="whyA"></u></i></div>
+      <div class="why"><b>Close by</b><span>short walk from homes to food, fun, parks and nature</span><i><u id="whyA"></u></i></div>
       <div class="why"><b>On the road</b><span>buildings beside, or one back from, one joined-up road network</span><i><u id="whyR"></u></i></div>
       <div class="why"><b id="whyPop"></b><span>people move in when the city is happy</span></div>
     </div>
@@ -264,6 +264,7 @@ function tidy(s){               // fill in anything an older save is missing
   if (!s.jars) s.jars={need:0,fun:0,pretty:0};
   if (!s.stage) s.stage = s.plots.length>1 ? {need:0,fun:0,pretty:0} : Object.assign({},s.jars);
   if (!Array.isArray(s.things)) s.things=[];
+  s.plots.forEach((p,i)=>{ if (!p.nat && p.painted.every(Boolean)){ p.nat=true; const rows=p.rows||PLOTS[i].rows; s.jars.pretty+=Math.min(2,Math.floor(rows.join('').replace(/[GPS]/g,'').length/4)); } });
   if (!s.roads) s.roads={};                    // 'x,z' -> 1 (a road Jack drew) or 0 (a path he removed)
   if (s.plots.length>PLOTS.length) s.plots.length=PLOTS.length;
   return s;
@@ -620,6 +621,8 @@ const ROADS_AT=4;                              // once a city has this many plot
 const roadsOn=()=>S.plots.length>=ROADS_AT;
 const ROAD_CSS='#5b6577';
 const landCss=n=>(n===2&&roadsOn())?ROAD_CSS:LAND[n].css, landDark=n=>LAND[n].dark||(n===2&&roadsOn());
+// Nature is beautiful: every four tiles of water, hills or woods on a plot add one to the beautiful jar (two at most).
+const natureBonus=i=>Math.min(2,Math.floor(rowsOf(i).join('').replace(/[GPS]/g,'').length/4));
 const rowsOf=i=>S.plots[i].rows||PLOTS[i].rows;       // the land Jack chose for this plot, or the built-in layout for older plots
 const target=()=>S.plots.length>1?STEP:FIRST_GOAL;      // how many of each kind this stage asks for
 function bounds(){ const xs=S.plots.map((p,i)=>PLOTS[i].ox), zs=S.plots.map((p,i)=>PLOTS[i].oz);
@@ -676,8 +679,9 @@ let scoreCache=null;
 const stale=()=>{ scoreCache=null; };
 function scores(){
   if (scoreCache) return scoreCache;
-  const j=S.jars, B=(Math.min(j.need,j.fun,j.pretty)+1)/(Math.max(j.need,j.fun,j.pretty)+1);
-  const built=tiles.filter(t=>t.thing), kindOf=t=>{ const ty=t.thing.userData.type; return ty==='house'?'home':THINGS[ty].kind; };
+  const j=S.jars, built=tiles.filter(t=>t.thing);
+  const B=1-(1-(Math.min(j.need,j.fun,j.pretty)+1)/(Math.max(j.need,j.fun,j.pretty)+1))*Math.min(1,built.length/3);   /* an empty town is not out of balance */
+  const kindOf=t=>{ const ty=t.thing.userData.type; return ty==='house'?'home':THINGS[ty].kind; };
   // close by: walk outward from each home and note how far the first of each kind is
   const homes=built.filter(t=>kindOf(t)==='home'), have={need:false,fun:false,pretty:false}; built.forEach(t=>{ const k=kindOf(t); if (k!=='home') have[k]=true; });
   let A=0;
@@ -686,6 +690,7 @@ function scores(){
     for (let i=0;i<q.length && Object.keys(found).length<3;i++){ const c=q[i][0], dist=q[i][1]; if (dist>13) break;
       STEPS.forEach(d=>{ const n=tileAt(c.x+d[0],c.z+d[1]); if (!n) return;
         if (n.thing){ const k=kindOf(n); if (k!=='home' && found[k]==null) found[k]=dist; }
+        else if (n.painted && n.num>=4){ if (found.pretty==null) found.pretty=dist; }
         else if (canWalk(n) && !seen.has(n)){ seen.add(n); q.push([n,dist+1]); } }); }
     A+=['need','fun','pretty'].reduce((a,k)=>a+(found[k]==null?0:clamp(1-(found[k]-2)/10,0,1)),0)/3;
   });
@@ -750,7 +755,10 @@ function paintTile(t,direct){
 }
 async function landDone(){
   phase='wait'; $('tray').innerHTML=''; sfx.win(); confetti(); banner(S.plots.length>1?'NEW LAND!':'YOUR LAND!',2000);
-  syncPeople(); await wait(1300); bakePlot(S.plots.length-1); syncCars(); await wait(900); deal();
+  syncPeople(); await wait(1300); bakePlot(S.plots.length-1); syncCars(); await wait(900);
+  const i=S.plots.length-1, plot=S.plots[i], gift=plot.nat?0:natureBonus(i); plot.nat=true;
+  if (gift){ S.jars.pretty+=gift; S.stage.pretty+=gift; persist(); banner('NATURE IS BEAUTIFUL  +'+gift,2200); sfx.ding(); drawHud('pretty'); await wait(2300); } else persist();
+  deal();
 }
 
 /* ---------- 2. each morning: pick one of three, then put it on the land ---------- */
@@ -942,10 +950,11 @@ function syncPeople(){
 }
 // Each person picks somewhere to go (fun places most often), walks there, spends a while, then picks again.
 function chooseTrip(p){
-  const spots=tiles.filter(t=>t.thing); if (!spots.length) return false;
+  const spots=tiles.filter(t=>t.thing), wild=tiles.filter(t=>t.painted && t.num>=4); if (!spots.length && !wild.length) return false;
   for (let tries=0; tries<4; tries++){
     const bag=[]; spots.forEach(t=>{ const k=THINGS[t.thing.userData.type].kind, w=k==='fun'?4:k==='pretty'?2:1; for(let n=0;n<w;n++) bag.push(t); });
-    const goal=pick(bag); if (goal===p.goal && spots.length>1) continue;
+    for (let n=0;n<3 && wild.length;n++) bag.push(pick(wild));                       // now and then, a trip out to nature
+    const goal=pick(bag); if (goal===p.goal && bag.length>1) continue;
     const next=new Set(STEPS.map(d=>tileAt(goal.x+d[0],goal.z+d[1])).filter(canWalk)); if (!next.size) continue;
     const path=findPath(p.at,next); if (!path) continue;
     p.goal=goal; p.path=path; p.i=0; p.k=0; p.state=path.length>1?'walk':'visit'; if (p.state==='visit') arrive(p); return true;
@@ -953,7 +962,7 @@ function chooseTrip(p){
   return false;
 }
 function arrive(p){
-  p.state='visit'; const g=p.goal, kind=g.thing?THINGS[g.thing.userData.type].kind:'need';
+  p.state='visit'; const g=p.goal, kind=g.thing?THINGS[g.thing.userData.type].kind:(g.num>=4?'pretty':'need');
   p.g.rotation.y=Math.atan2(g.x-p.at.x,g.z-p.at.z); p.kind=kind; p.timer=3+Math.random()*3; p.t0=p.timer;
   if (kind!=='need' && !p.sad){ p.hrt.visible=true; p.hrt.userData.t=0; }
 }
