@@ -7,7 +7,7 @@ G = Path(__file__).resolve().parent.parent / "reading-adventures"
 out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("reading-adventures-preview.html")
 b = lambda p: base64.b64encode((G / p).read_bytes()).decode()
 h = (G / "index.html").read_text()
-ids = [f.stem for f in sorted((G / "sounds").glob("*.mp3"))]
+ids = [f.relative_to(G / "sounds").with_suffix("").as_posix() for f in sorted((G / "sounds").rglob("*.mp3"))]
 h = h.replace('url("andika-700.woff2")', f'url("data:font/woff2;base64,{b("andika-700.woff2")}")')
 h = h.replace('src="jack.webp"', f'src="data:image/webp;base64,{b("jack.webp")}"')
 h = re.sub(r'<link rel="(apple-touch-icon|icon|manifest)"[^>]*>\n', "", h)

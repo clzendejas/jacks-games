@@ -303,7 +303,41 @@ function decode(id){
   if (!ac || buf[id] || !raw[id]) return;
   try{ const p=ac.decodeAudioData(raw[id].slice(0), b=>{buf[id]=b;}, ()=>{}); if (p && p.catch) p.catch(()=>{}); }catch(e){}
 }
-ORDER.forEach(id=>{ bytes(id).then(ab=>{ raw[id]=ab; decode(id); }).catch(()=>{}); });
+const got={};
+function decodeP(id){ return new Promise(res=>{
+  if (!ac || buf[id] || !raw[id]) return res();
+  try{ const p=ac.decodeAudioData(raw[id].slice(0), b=>{buf[id]=b;res();}, ()=>res()); if (p && p.catch) p.catch(()=>{}); }catch(e){ res(); }
+}); }
+function load(id){ return got[id] || (got[id]=bytes(id).then(ab=>{ raw[id]=ab; return decodeP(id); }).catch(()=>{})); }
+ORDER.forEach(load);
+/* the spoken lines (a parent's voice): instructions a01-a30 and encouragement b01-b30, plus one clip per word */
+const SAY={welcome:'a01',pickOne:'a02',pals:'a03',slide:'a04',listen:'a06',newPals:'a07',yourTurn:'a08',tapPal:'a09',whichPal:'a10',thisPal:'a11',
+  readWords:'a13',slideJack:'a14',goSlow:'a15',whatWord:'a18',wordIs:'a19',readIt:'a20',
+  wayToGo:'b07',superReader:'b08',onARoll:'b09',keepGoing:'b14',tricky:'b15',didIt:'b16',levelDone:'b17',allPals:'b19',ready:'b21',proud:'b24',speaker:'b28'};
+Object.keys(SAY).forEach(k=>SAY[k]='say/'+SAY[k]);
+const PRAISE=['b01','b02','b03','b04','b05','b06','b07'].map(s=>'say/'+s), RETRY=['b10','b11','b12','b13'].map(s=>'say/'+s);
+PRAISE.concat(RETRY, Object.values(SAY)).forEach(load);
+let talking=null, talkId=0, bagP=[], bagR=[];
+const praise=()=>{ if(!bagP.length) bagP=shuffle(PRAISE.slice()); return bagP.pop(); };
+const retryLine=()=>{ if(!bagR.length) bagR=shuffle(RETRY.slice()); return bagR.pop(); };
+function hush(){ talkId++; try{ if (talking){ if (talking.stop) talking.stop(); else talking.pause(); } }catch(e){} talking=null; }
+// say one spoken line; a new line cuts off the last. Resolves when the line ends, or at once if it cannot play.
+function voice(id){
+  hush(); const me=talkId;
+  return load(id).then(()=>decodeP(id)).then(()=>new Promise(res=>{
+    if (me!==talkId) return res();
+    let done=false; const end=()=>{ if(!done){ done=true; res(); } };
+    try{
+      if (ac && ac.state==='running' && buf[id]){ const s=ac.createBufferSource(); s.buffer=buf[id]; s.connect(ac.destination); s.onended=end; s.start(); talking=s; setTimeout(end,buf[id].duration*1000+300); return; }
+    }catch(e){}
+    try{ const a=new Audio(srcOf(id)); talking=a; a.onended=end; a.onerror=end; a.play().catch(end); setTimeout(end,4500); }catch(e){ end(); }
+  }), ()=>{});
+}
+// several lines in a row, stopping if the screen has moved on. True when all of them were said.
+async function tell(my,...ids){
+  for (const id of ids){ if (!id) continue; if (my!==run) return false; await voice(id); if (my!==run) return false; await wait(140); }
+  return my===run;
+}
 /* iPhones only start sound from inside a tap, and mute this kind of audio when the ring switch is on silent.
    So every tap (re)starts the audio engine and asks the phone to treat the game as media playback. */
 const SILENCE="data:audio/wav;base64,UklGRvQHAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdAHAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
@@ -367,18 +401,18 @@ function sizeGrid(count){
 }
 
 /* ---------- a level: meet the new pals, then find pals by their sound ---------- */
-let run=0, known=[], fresh=[], target=null, score=0, lastTarget=null, locked=false, strikes=0, hears=0;
+let run=0, known=[], fresh=[], target=null, score=0, lastTarget=null, locked=false, strikes=0, hears=0, streak=0, asked=0, hinted=false, title=null;
 const show=(id,on)=>{ $(id).hidden=!on; };
 
-function start(L){
-  mode='pals'; $('slideBox').hidden=true; $('pals').style.display='';
+function start(L,name){
+  hush(); title=name||null; mode='pals'; $('slideBox').hidden=true; $('pals').style.display='';
   L=Math.max(1,Math.min(PRACTICE,L|0));
   run++; save.level=L; if(L>save.max) save.max=L; save.max=Math.min(save.max,PRACTICE); persist(); header();
   $('win').classList.remove('on'); $('fail').classList.remove('on'); $('turn').classList.remove('on'); $('pals').classList.remove('out');
   strikes=0; $('lives').hidden=false; drawLives();
   fresh = L<=LAST_NEW ? ORDER.slice((L-1)*2, L*2) : [];
   known = ORDER.slice(0, Math.min(ORDER.length, L*2));
-  score=0; lastTarget=null; drawStars(0);
+  score=0; streak=0; asked=0; hinted=false; lastTarget=null; drawStars(0);
   fresh.length ? meet() : yourTurn();
 }
 const ICON={
@@ -409,10 +443,13 @@ async function meet(){
   show('hear',false); show('next',false); cue('listen'); $('turn').classList.remove('on');
   const g=$('pals'); g.innerHTML=''; sizeGrid(fresh.length);
   const els=fresh.map(id=>{ const el=palEl(id); g.appendChild(el); el.addEventListener('click',()=>{ say(id); flash(el,'talk',460); }); return el; });
-  await wait(700); if(my!==run) return;
+  await wait(500); if(my!==run) return;
+  if (!await tell(my, title, SAY.newPals, SAY.listen)) return; title=null;
+  await wait(300); if(my!==run) return;
   for (let pass=0; pass<2; pass++){
     for (let i=0;i<fresh.length;i++){
       els.forEach((e,k)=>{ e.classList.toggle('dim',k!==i); e.classList.toggle('spot',k===i); });
+      if (!pass && !await tell(my, SAY.thisPal)) return;
       say(fresh[i]); flash(els[i],'talk',460);
       await wait(pass?1250:1500); if(my!==run) return;
     }
@@ -425,7 +462,9 @@ async function yourTurn(){
   const my=run;
   show('hear',false); $('pals').innerHTML=''; cue('find');
   $('turnIcon').innerHTML=ICON.tap; $('turn').classList.add('on'); sfx.yes();
-  await wait(1600); if(my!==run) return;
+  await wait(350); if(my!==run) return;
+  if (!await tell(my, title, SAY.yourTurn)) return; title=null;
+  await wait(700); if(my!==run) return;
   $('turn').classList.remove('on');
   await wait(500); if(my!==run) return;
   ask();
@@ -441,8 +480,8 @@ function drawHear(){
 function strike(){
   strikes++; drawLives(); flash($('lives'),'hit',420);
   if (strikes<MAX_STRIKES) return false;
-  run++; locked=true; show('hear',false);
-  setTimeout(()=>{ sfx.fail(); $('fail').classList.add('on'); },700);
+  const my=++run; locked=true; show('hear',false); hush();
+  setTimeout(()=>{ if(my!==run) return; sfx.fail(); $('fail').classList.add('on'); setTimeout(()=>tell(my,SAY.tricky),1100); },700);
   return true;
 }
 // practice: every pal comes round once before any repeats, the ones he has missed first
@@ -463,8 +502,8 @@ function chooseTarget(){
   });
   return pick(bag);
 }
-function ask(){
-  const my=run; locked=false;
+async function ask(){
+  const my=run; locked=true;                 // taps wait until the question has been asked
   show('next',false); show('hear',true);
   target=chooseTarget(); lastTarget=target; hears=0; drawHear();
   const n=Math.min(known.length, save.level===1?2:save.level===2?3:4);
@@ -475,7 +514,11 @@ function ask(){
     const el=palEl(id); g.appendChild(el);
     el.addEventListener('click',()=>choose(id,el));
   });
-  setTimeout(()=>{ if(my===run) say(target); },900);
+  const q=++asked;
+  await wait(600); if(my!==run) return;
+  if (!await tell(my, q%2 ? SAY.tapPal : SAY.whichPal)) return;
+  say(target); locked=false;
+  setTimeout(()=>{ if (my===run && asked===q && !locked && !hinted && !hears){ hinted=true; voice(SAY.speaker); } },9000);   // a nudge if he is stuck, once a level
 }
 async function choose(id,el){
   if (locked || el.classList.contains('dim')) return;
@@ -485,25 +528,31 @@ async function choose(id,el){
     [...$('pals').children].forEach(p=>{ if(p!==el) p.classList.add('dim'); });
     if (save.miss[target]>0) save.miss[target]--;
     score++; drawStars(score); persist();
-    await wait(700); if(my!==run) return; say(target);          // only the right pal ever says its sound
-    await wait(1500); if(my!==run) return;
+    streak++;
+    await wait(550); if(my!==run) return;
+    if (!await tell(my, streak===4 ? SAY.onARoll : praise())) return;
+    say(target);                                                  // only the right pal ever says its sound
+    await wait(1300); if(my!==run) return;
     if (score>=QUESTIONS){ win(); return; }
     show('hear',false); $('pals').classList.add('out');             // quiet beat before the next question
     await wait(800); if(my!==run) return;
     $('pals').classList.remove('out'); ask();
   } else {
-    locked=true;                       // a wrong pal stays silent: X, shake, then the question repeats
+    locked=true; streak=0;             // a wrong pal stays silent: X, shake, then the question repeats
     save.miss[target]=Math.min(5,(save.miss[target]||0)+1); persist();
     sfx.no(); badge(el,'bad'); flash(el,'no',420); el.classList.add('dim');
     if (strike()) return;
-    await wait(1300); if(my!==run) return; say(target);
-    locked=false;
+    await wait(750); if(my!==run) return;
+    if (!await tell(my, retryLine())) return;
+    say(target); locked=false;
   }
 }
 function win(){
   show('hear',false);
   const s=cur(); if (s.level+1>s.max){ s.max=s.level+1; if(mode==='pals') s.max=Math.min(s.max,PRACTICE); persist(); }
-  sfx.win();
+  sfx.win(); hush();
+  { const my=run, lastPals=mode==='pals' && s.level===LAST_NEW;
+    setTimeout(()=>tell(my, pick([SAY.didIt,SAY.wayToGo,SAY.proud,SAY.superReader]), SAY.levelDone, lastPals?SAY.allPals:SAY.ready), 900); }
   const w=$('win'); w.querySelectorAll('.conf').forEach(c=>c.remove());
   for (let n=0;n<40;n++){
     const c=document.createElement('div'); c.className='conf';
@@ -523,7 +572,6 @@ const WORDS=[
   'ship shop fish dish chip chin much thin bath moth ring king sing quiz quit'
 ].map(s=>s.split(' '));
 const SLIDE_WORDS=6, TOKEN=80;
-const HAS_WORD_AUDIO=false;          // whole-word recordings are not in yet; until then the sounds replay quickly as the blend
 function letters(w){ const out=[]; for(let i=0;i<w.length;){ const two=w.slice(i,i+2); if(['sh','ch','th','ng','qu'].includes(two)){out.push(two);i+=2;} else {out.push(w[i]);i++;} } return out; }
 function chooseWords(L){
   const si=Math.min(WORDS.length-1, Math.floor((L-1)/2));
@@ -531,17 +579,18 @@ function chooseWords(L){
   if (si) main.push(pick(WORDS[Math.floor(Math.random()*si)]));
   return main.sort((a,b)=>a.length-b.length);
 }
-let sWords=[], wi=0, toks=[], tiles=[], lastZone=-1, dragging=false, slideDone=false;
-function startSlide(L){
-  mode='slide'; run++;
+let sWords=[], wi=0, toks=[], tiles=[], lastZone=-1, dragging=false, slideDone=false, drops=0;
+function startSlide(L,name){
+  hush(); mode='slide'; run++;
   const s=all.slide; s.level=L; if(L>s.max) s.max=L; persist(); header();
   $('win').classList.remove('on'); $('turn').classList.remove('on');
   $('pals').style.display='none'; $('pals').innerHTML=''; $('slideBox').hidden=false;
   show('hear',false); show('next',false); target=null; $('lives').hidden=true; $('fail').classList.remove('on');
-  score=0; drawStars(0,SLIDE_WORDS); sWords=chooseWords(L); wi=0; cue('slide'); nextWord();
+  score=0; drawStars(0,SLIDE_WORDS); sWords=chooseWords(L); sWords.forEach(w=>load('words/'+w)); wi=0; cue('slide'); nextWord();
+  const my=run; setTimeout(()=>tell(my, name, SAY.readWords, SAY.slideJack, SAY.goSlow), 500);
 }
 function nextWord(){
-  toks=letters(sWords[wi]);
+  drops=0; toks=letters(sWords[wi]);
   const w=$('word'); w.classList.remove('joined'); w.innerHTML='';
   const ps=Math.max(60, Math.min(130, ($('stage').clientWidth-20)/(toks.length*1.12)));
   w.style.setProperty('--ps',ps+'px');
@@ -576,11 +625,14 @@ async function slideEnd(){
   await wait(450); if(my!==run) return;
   $('word').classList.add('joined'); sfx.yes();
   await wait(500); if(my!==run) return;
-  if (HAS_WORD_AUDIO) say('word-'+sWords[wi]);
-  else toks.forEach((id,k)=>setTimeout(()=>{ if(my===run) say(id); }, k*230));
+  if (!await tell(my, SAY.whatWord)) return;                    // a beat for him to say it first
+  await wait(1100); if(my!==run) return;
+  if (!await tell(my, wi?null:SAY.wordIs, 'words/'+sWords[wi])) return;
   burst(tiles[Math.floor(tiles.length/2)]); badge(tiles[tiles.length-1],'ok');
   score++; drawStars(score,SLIDE_WORDS);
-  await wait(1700); if(my!==run) return;
+  await wait(350); if(my!==run) return;
+  if (!await tell(my, wi?(wi%2?praise():null):SAY.readIt)) return;
+  await wait(600); if(my!==run) return;
   wi++; wi>=SLIDE_WORDS ? win() : nextWord();
 }
 (function(){
@@ -589,11 +641,11 @@ async function slideEnd(){
     if (slideDone) return; unlock();
     const tk=$('token').getBoundingClientRect();
     if (Math.abs(e.clientX-(tk.left+tk.width/2))>70){ flash($('token'),'no',420); return; }   // must start on Jack
-    dragging=true; try{ tr.setPointerCapture(e.pointerId); }catch(err){}
+    hush(); dragging=true; try{ tr.setPointerCapture(e.pointerId); }catch(err){}
     $('token').classList.remove('hint','back'); slideMove(e);
   });
   tr.addEventListener('pointermove',e=>{ if(dragging && !slideDone) slideMove(e); });
-  const up=()=>{ if(dragging && !slideDone) resetSlide(true); };
+  const up=()=>{ if(dragging && !slideDone){ resetSlide(true); if (++drops===2) voice(SAY.keepGoing); } };
   tr.addEventListener('pointerup',up); tr.addEventListener('pointercancel',up);
   $('goal').innerHTML=starSvg;
 })();
@@ -614,8 +666,9 @@ $('prev').addEventListener('click',()=>{ if(cur().level>1){ sfx.tap(); go(cur().
 $('fwd').addEventListener('click',()=>{ if(cur().level<cur().max){ sfx.tap(); go(cur().level+1); } });
 /* ---------- the adventure map ---------- */
 const lockSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor" stroke="none"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
+let greeted=false;
 function showMap(){
-  run++; target=null; $('turn').classList.remove('on'); $('fail').classList.remove('on');
+  hush(); run++; target=null; $('turn').classList.remove('on'); $('fail').classList.remove('on');
   $('win').classList.remove('on');
   $('subPals').textContent = save.level>=PRACTICE ? 'PRACTICE' : 'LEVEL '+Math.max(1,save.level|0)+' OF '+LAST_NEW;
   const open=slideOpen(), b=$('goSlide');
@@ -623,14 +676,15 @@ function showMap(){
   $('subSlide').textContent = open ? 'LEVEL '+Math.max(1,all.slide.level|0) : 'FINISH 3 SOUND PALS LEVELS';
   $('endSlide').innerHTML = open ? '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg>' : lockSvg;
   $('map').classList.add('on');
+  { const my=run, first=!greeted; greeted=true; setTimeout(()=>tell(my, first?SAY.welcome:null, SAY.pickOne), 400); }
 }
 const slideOpen=()=>true;   // open from the start for now (was: after three Sound Pals levels)
 $('play').addEventListener('click',()=>{ unlock(); sfx.yes(); $('home').classList.remove('on'); showMap(); });
-$('goPals').addEventListener('click',()=>{ unlock(); sfx.tap(); $('map').classList.remove('on'); start(Math.max(1,save.level|0)); });
+$('goPals').addEventListener('click',()=>{ unlock(); sfx.tap(); $('map').classList.remove('on'); start(Math.max(1,save.level|0), SAY.pals); });
 $('goBuild').addEventListener('click',()=>{ sfx.no(); flash($('goBuild'),'no',420); });
 $('goSlide').addEventListener('click',()=>{
   if (!slideOpen()){ sfx.no(); flash($('goSlide'),'no',420); return; }
-  unlock(); sfx.tap(); $('map').classList.remove('on'); startSlide(Math.max(1,all.slide.level|0));
+  unlock(); sfx.tap(); $('map').classList.remove('on'); startSlide(Math.max(1,all.slide.level|0), SAY.slide);
 });
 // grown-up shortcut: hold a locked Word Slide for two seconds to open it early
 (function(){ let t=null; const b=$('goSlide');
