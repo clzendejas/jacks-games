@@ -141,6 +141,19 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 #token.no{animation:no .4s}
 #token.hint{animation:hint 1.3s infinite}
 @keyframes hint{50%{transform:translateX(30px)}}
+/* Word Builder: empty slots on top, a tray of letter pals underneath */
+#buildBox{width:100%;display:flex;flex-direction:column;align-items:center;gap:calc(var(--ps)*.6)}
+#buildBox[hidden]{display:none}
+#slots{display:flex;gap:calc(var(--ps)*.12);padding-top:calc(var(--ps)*.16);transition:gap .35s}
+#slots.joined{gap:0}
+.slot{width:var(--ps);height:var(--ps);flex:none;border-radius:26%;outline:4px dashed rgba(255,255,255,.38);outline-offset:-4px;position:relative;transition:background .2s}
+.slot.next{outline-color:var(--sun);background:rgba(255,255,255,.09)}
+.slot.full{outline:none;background:none}
+#tray{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--ps)*.18);padding-top:calc(var(--ps)*.16);transition:opacity .3s}
+#tray.out{opacity:0}
+#tray .pal{flex:none;touch-action:none;cursor:grab}
+#tray .pal.drag{z-index:5;transition:none;box-shadow:0 calc(var(--ps)*.2) calc(var(--ps)*.3) rgba(0,0,0,.4)}
+#tray .gap{width:var(--ps);height:var(--ps);flex:none}
 #bottom{display:flex;justify-content:center;align-items:center;min-height:92px}
 .round{
   width:84px;height:84px;border-radius:50%;background:var(--sun);color:var(--sun-ink);
@@ -215,7 +228,8 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
     <div id="slideBox" hidden>
       <div id="word"></div>
       <div id="track"><div id="rail"><div id="fill"></div></div><span id="goal"></span><div id="token"><img src="jack.webp" alt=""></div></div>
-    </div><div id="turn"><span id="turnIcon"></span><b>YOUR TURN!</b></div></div>
+    </div>
+    <div id="buildBox" hidden><div id="slots"></div><div id="tray"></div></div><div id="turn"><span id="turnIcon"></span><b>YOUR TURN!</b></div></div>
   <div id="bottom">
     <button class="round" id="hear" aria-label="Hear the sound again" hidden></button>
     <button class="round pulse" id="next" aria-label="Next" hidden></button>
@@ -246,10 +260,10 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
     <span><span class="name">WORD SLIDE</span><span class="sub" id="subSlide"></span></span>
     <span class="end" id="endSlide"></span>
   </button>
-  <button class="stop locked" id="goBuild" aria-disabled="true">
+  <button class="stop" id="goBuild" style="--c:#ff6fb5">
     <span class="art" id="artBuild"></span>
-    <span><span class="name">WORD BUILDER</span><span class="sub">COMING SOON</span></span>
-    <span class="end lock"></span>
+    <span><span class="name">WORD BUILDER</span><span class="sub" id="subBuild">LEVEL 1</span></span>
+    <span class="end"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg></span>
   </button>
 </div>
 
@@ -272,15 +286,16 @@ const QUESTIONS=8;
 const color=id=>COLORS[ORDER.indexOf(id)%COLORS.length];
 
 // one saved record for the whole game, with a section per adventure
-let all={pals:{level:1,max:1,miss:{}}, slide:{level:1,max:1}, unlock:{slide:false}};
+let all={pals:{level:1,max:1,miss:{}}, slide:{level:1,max:1}, build:{level:1,max:1}, unlock:{slide:false}};
 try{
   const s=JSON.parse(localStorage.getItem('reading-adventures')||'{}');
   if (s && s.pals) Object.assign(all.pals, s.pals);
   if (s && s.slide) Object.assign(all.slide, s.slide);
+  if (s && s.build) Object.assign(all.build, s.build);
   if (s && s.unlock) Object.assign(all.unlock, s.unlock);
 }catch(e){}
 let mode='pals';                     // which adventure is on screen
-const cur=()=>mode==='slide'?all.slide:all.pals;
+const cur=()=>mode==='slide'?all.slide:mode==='build'?all.build:all.pals;
 const save=all.pals;                 // Sound Pals progress
 if (!save.miss || typeof save.miss!=='object') save.miss={};
 function persist(){ try{ localStorage.setItem('reading-adventures', JSON.stringify(all)); }catch(e){} }
@@ -312,7 +327,7 @@ function load(id){ return got[id] || (got[id]=bytes(id).then(ab=>{ raw[id]=ab; r
 ORDER.forEach(load);
 /* the spoken lines (a parent's voice): instructions a01-a30 and encouragement b01-b30, plus one clip per word */
 const SAY={welcome:'a01',pickOne:'a02',pals:'a03',slide:'a04',listen:'a06',newPals:'a07',yourTurn:'a08',tapPal:'a09',whichPal:'a10',thisPal:'a11',
-  readWords:'a13',slideJack:'a14',goSlow:'a15',whatWord:'a18',wordIs:'a19',readIt:'a20',
+  build:'a05',buildWords:'a22',listenWord:'a23',dragLetters:'a24',first:'a25',next:'a26',last:'a27',canSpell:'a28',builtIt:'a29',spelled:'a30',readWords:'a13',slideJack:'a14',goSlow:'a15',whatWord:'a18',wordIs:'a19',readIt:'a20',
   wayToGo:'b07',superReader:'b08',onARoll:'b09',keepGoing:'b14',tricky:'b15',didIt:'b16',levelDone:'b17',allPals:'b19',ready:'b21',proud:'b24',speaker:'b28'};
 Object.keys(SAY).forEach(k=>SAY[k]='say/'+SAY[k]);
 const PRAISE=['b01','b02','b03','b04','b05','b06','b07'].map(s=>'say/'+s), RETRY=['b10','b11','b12','b13'].map(s=>'say/'+s);
@@ -405,7 +420,7 @@ let run=0, known=[], fresh=[], target=null, score=0, lastTarget=null, locked=fal
 const show=(id,on)=>{ $(id).hidden=!on; };
 
 function start(L,name){
-  hush(); title=name||null; mode='pals'; $('slideBox').hidden=true; $('pals').style.display='';
+  hush(); title=name||null; mode='pals'; $('buildBox').hidden=true; $('slideBox').hidden=true; $('pals').style.display='';
   L=Math.max(1,Math.min(PRACTICE,L|0));
   run++; save.level=L; if(L>save.max) save.max=L; save.max=Math.min(save.max,PRACTICE); persist(); header();
   $('win').classList.remove('on'); $('fail').classList.remove('on'); $('turn').classList.remove('on'); $('pals').classList.remove('out');
@@ -425,7 +440,7 @@ const ICON={
 function cue(kind){
   const c=$('cue'); c.className=kind;
   $('cueIcon').innerHTML = kind==='listen'?ICON.listen:kind==='slide'?ICON.slide:ICON.tap;
-  $('cueText').textContent = kind==='listen'?'LISTEN':kind==='slide'?'SLIDE TO THE STAR':'TAP THE PAL YOU HEAR';
+  $('cueText').textContent = kind==='listen'?'LISTEN':kind==='slide'?'SLIDE TO THE STAR':kind==='build'?'BUILD THE WORD':'TAP THE PAL YOU HEAR';
   flash(c,'pop',520);
 }
 function badge(el,kind){ const b=document.createElement('span'); b.className='badge '+kind; b.innerHTML=ICON[kind]; el.appendChild(b); }
@@ -584,7 +599,7 @@ function startSlide(L,name){
   hush(); mode='slide'; run++;
   const s=all.slide; s.level=L; if(L>s.max) s.max=L; persist(); header();
   $('win').classList.remove('on'); $('turn').classList.remove('on');
-  $('pals').style.display='none'; $('pals').innerHTML=''; $('slideBox').hidden=false;
+  $('pals').style.display='none'; $('pals').innerHTML=''; $('buildBox').hidden=true; $('slideBox').hidden=false;
   show('hear',false); show('next',false); target=null; $('lives').hidden=true; $('fail').classList.remove('on');
   score=0; drawStars(0,SLIDE_WORDS); sWords=chooseWords(L); sWords.forEach(w=>load('words/'+w)); wi=0; cue('slide'); nextWord();
   const my=run; setTimeout(()=>tell(my, name, SAY.readWords, SAY.slideJack, SAY.goSlow), 500);
@@ -649,18 +664,98 @@ async function slideEnd(){
   tr.addEventListener('pointerup',up); tr.addEventListener('pointercancel',up);
   $('goal').innerHTML=starSvg;
 })();
-const go=L=>mode==='slide'?startSlide(L):start(L);
+
+/* ---------- Word Builder: hear a word, then put its letter pals in order (tap a pal, or drag it to a slot) ---------- */
+const BUILD_WORDS=5;
+let bWords=[], bi=0, bToks=[], slots=[], filled=[], bBusy=true;
+function startBuild(L,name){
+  hush(); mode='build'; run++;
+  const s=all.build; s.level=L; if(L>s.max) s.max=L; persist(); header();
+  $('win').classList.remove('on'); $('turn').classList.remove('on'); $('fail').classList.remove('on');
+  $('pals').style.display='none'; $('pals').innerHTML=''; $('slideBox').hidden=true; $('buildBox').hidden=false;
+  show('next',false); target=null; strikes=0; $('lives').hidden=false; drawLives();
+  $('hear').classList.remove('spent'); $('hear').querySelector('.pips').innerHTML='';
+  score=0; streak=0; drawStars(0,BUILD_WORDS); cue('build');
+  bWords=shuffle(chooseWords(L)).slice(0,BUILD_WORDS).sort((a,b)=>a.length-b.length); bWords.forEach(w=>load('words/'+w)); bi=0;
+  buildWord(name);
+}
+function markNext(){ const k=filled.indexOf(null); slots.forEach((s,i)=>s.classList.toggle('next',i===k)); return k; }
+async function buildWord(name){
+  const my=run, L=all.build.level, word=bWords[bi]; bBusy=true; show('hear',false);
+  bToks=letters(word); filled=bToks.map(()=>null);
+  // spare pals that do not belong: one at first, more on later levels, drawn from the letters met so far
+  const si=Math.min(WORDS.length-1, Math.floor((L-1)/2)), pool=[...new Set(WORDS.slice(0,si+1).flat().flatMap(letters))].filter(t=>!bToks.includes(t));
+  const tray=shuffle(bToks.concat(shuffle(pool).slice(0, L<=2?1:L<=6?2:3)));
+  const st=$('stage'), ps=Math.max(56, Math.min(130, (st.clientWidth-20)/(Math.max(bToks.length,Math.min(tray.length,5))*1.2), (st.clientHeight-40)/(tray.length>5?3.9:2.75)));
+  $('buildBox').style.setProperty('--ps',ps+'px');
+  const sl=$('slots'), tr=$('tray'); sl.classList.remove('joined'); sl.innerHTML=''; tr.innerHTML=''; tr.classList.remove('out');
+  slots=bToks.map(()=>{ const s=document.createElement('div'); s.className='slot'; sl.appendChild(s); return s; });
+  tray.forEach(id=>{ const el=palEl(id); el.dataset.id=id; tr.appendChild(el); armTile(el); });
+  await wait(600); if(my!==run) return;
+  if (!await tell(my, name, bi?null:SAY.buildWords, bi%2?SAY.canSpell:SAY.listenWord, 'words/'+word)) return;
+  bBusy=false; show('hear',true); markNext();
+  if (!bi) tell(my, SAY.dragLetters, SAY.first);          // he can start while this plays; touching a pal cuts it short
+}
+function tryPlace(el,k){
+  if (bBusy || el.dataset.in) return;
+  const my=run, id=el.dataset.id, word=bWords[bi];
+  if (k==null) k=filled.indexOf(null);
+  if (k<0 || filled[k]) return;
+  if (bToks[k]!==id){                                       // not that one: it shakes and goes home, without a sound of its own
+    bBusy=true; streak=0; sfx.no(); flash(el,'no',420);
+    if (strike()) return;
+    setTimeout(async()=>{ if(my!==run) return; await tell(my, retryLine(), 'words/'+word); if(my===run) bBusy=false; },650);
+    return;
+  }
+  const gap=document.createElement('span'); gap.className='gap'; el.replaceWith(gap);
+  el.dataset.in='1'; el.style.transform=''; el.classList.remove('drag'); slots[k].appendChild(el); slots[k].classList.add('full');
+  filled[k]=id; say(id); flash(el,'yes',720);
+  const left=filled.filter(f=>!f).length, nk=markNext();
+  if (!left){ buildDone(); return; }
+  if (!bi) setTimeout(()=>{ if(my===run && !bBusy && filled.filter(f=>!f).length===left) voice(nk===bToks.length-1?SAY.last:SAY.next); },900);
+}
+async function buildDone(){
+  const my=run, word=bWords[bi]; bBusy=true; show('hear',false); $('tray').classList.add('out');
+  await wait(800); if(my!==run) return;
+  $('slots').classList.add('joined'); sfx.yes(); streak++;
+  await wait(550); if(my!==run) return;
+  if (!await tell(my, bi%2?SAY.spelled:SAY.builtIt, 'words/'+word)) return;
+  const done=[...$('slots').querySelectorAll('.pal')]; burst(done[Math.floor(done.length/2)]); badge(done[done.length-1],'ok');
+  score++; drawStars(score,BUILD_WORDS);
+  await wait(1300); if(my!==run) return;
+  bi++; bi>=BUILD_WORDS ? win() : buildWord();
+}
+function armTile(el){
+  let sx=0, sy=0, drag=false, pid=null;
+  const home=()=>{ pid=null; el.classList.remove('drag'); el.style.transform=''; };
+  el.addEventListener('pointerdown',e=>{ if (bBusy || el.dataset.in) return; unlock(); hush(); pid=e.pointerId; sx=e.clientX; sy=e.clientY; drag=false; try{ el.setPointerCapture(pid); }catch(err){} });
+  el.addEventListener('pointermove',e=>{
+    if (pid!==e.pointerId) return; const dx=e.clientX-sx, dy=e.clientY-sy;
+    if (!drag && Math.hypot(dx,dy)>12){ drag=true; el.classList.add('drag'); }
+    if (drag) el.style.transform='translate('+dx+'px,'+dy+'px) scale(1.08)';
+  });
+  el.addEventListener('pointerup',e=>{
+    if (pid!==e.pointerId) return; const was=drag; home();
+    if (!was){ tryPlace(el,null); return; }                 // a tap: into the next empty slot
+    let best=-1, bd=1e9;                                    // a drag: into the empty slot it was dropped on
+    slots.forEach((s,k)=>{ if (filled[k]) return; const r=s.getBoundingClientRect(), d=Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)); if (d<bd){ bd=d; best=k; } });
+    if (best>=0 && bd<slots[0].offsetWidth*1.1) tryPlace(el,best);
+  });
+  el.addEventListener('pointercancel',e=>{ if (pid===e.pointerId) home(); });
+}
+const go=(L,name)=>mode==='slide'?startSlide(L,name):mode==='build'?startBuild(L,name):start(L,name);
 
 /* ---------- buttons ---------- */
 $('hear').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>';
 $('next').innerHTML='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg>';
 $('hear').insertAdjacentHTML('beforeend','<span class="pips"></span>');
 $('hear').addEventListener('click',()=>{
+  if (mode==='build'){ if (!bBusy) voice('words/'+bWords[bi]); return; }      // the word again, as often as he likes
   if (!target || locked) return;
   if (hears<MAX_HEARS){ hears++; say(target); drawHear(); return; }
   sfx.no(); flash($('hear'),'no',420); strike();           // out of replays: pressing again costs a heart
 });
-$('retry').addEventListener('click',()=>{ sfx.tap(); start(save.level); });
+$('retry').addEventListener('click',()=>{ sfx.tap(); go(cur().level); });
 $('again').addEventListener('click',()=>{ sfx.tap(); go(cur().level+1); });
 $('prev').addEventListener('click',()=>{ if(cur().level>1){ sfx.tap(); go(cur().level-1); } });
 $('fwd').addEventListener('click',()=>{ if(cur().level<cur().max){ sfx.tap(); go(cur().level+1); } });
@@ -675,13 +770,14 @@ function showMap(){
   b.classList.toggle('locked',!open);
   $('subSlide').textContent = open ? 'LEVEL '+Math.max(1,all.slide.level|0) : 'FINISH 3 SOUND PALS LEVELS';
   $('endSlide').innerHTML = open ? '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4l14 8-14 8z"/></svg>' : lockSvg;
+  $('subBuild').textContent='LEVEL '+Math.max(1,all.build.level|0);
   $('map').classList.add('on');
   { const my=run, first=!greeted; greeted=true; setTimeout(()=>tell(my, first?SAY.welcome:null, SAY.pickOne), 400); }
 }
 const slideOpen=()=>true;   // open from the start for now (was: after three Sound Pals levels)
 $('play').addEventListener('click',()=>{ unlock(); sfx.yes(); $('home').classList.remove('on'); showMap(); });
 $('goPals').addEventListener('click',()=>{ unlock(); sfx.tap(); $('map').classList.remove('on'); start(Math.max(1,save.level|0), SAY.pals); });
-$('goBuild').addEventListener('click',()=>{ sfx.no(); flash($('goBuild'),'no',420); });
+$('goBuild').addEventListener('click',()=>{ unlock(); sfx.tap(); $('map').classList.remove('on'); startBuild(Math.max(1,all.build.level|0), SAY.build); });
 $('goSlide').addEventListener('click',()=>{
   if (!slideOpen()){ sfx.no(); flash($('goSlide'),'no',420); return; }
   unlock(); sfx.tap(); $('map').classList.remove('on'); startSlide(Math.max(1,all.slide.level|0), SAY.slide);
