@@ -11,6 +11,7 @@ that also installs as its own app and works offline.
 | Rainbow Bottles | [Play](https://clzendejas.github.io/jacks-games/rainbow-bottles/) | Pour colors between bottles until every bottle holds one color. |
 | Jack's Reading Adventures | [Play](https://clzendejas.github.io/jacks-games/reading-adventures/) | Learn to read in small steps. First adventure: Sound Pals, where letter pals say their sounds. Word Slide (blending) and Word Builder (spelling) are coming. |
 | Jack's World | [Play](https://clzendejas.github.io/jacks-games/jacks-world/) | A blocky 3D town builder. Paint the land by number, then build one thing a day: something needed, something fun, or something beautiful. |
+| Jack's Hero Squad | [Play](https://clzendejas.github.io/jacks-games/hero-squad/) | A hero adventure. Walk across islands, cliffs, stairs and bridges and pick your fights: you beat any monster whose number is not bigger than yours, and its number is added to yours. Grow big enough to beat the boss. No energy, timers or packs. |
 | Logan's Coloring Book | [Play](https://clzendejas.github.io/jacks-games/logans-coloring-book/) | Twenty-eight pictures in five books (zoo animals, princesses, unicorns, under the sea, yummy treats). Paint by numbers, or color freely. Paint stays inside the lines. |
 
 ## Install on a tablet or phone
@@ -29,6 +30,10 @@ Each game installs separately, with its own icon.
 One folder per game. Each folder holds an `index.html` with all the code
 and styles inline, a web app manifest, icons, and a small service worker
 for offline play. There is no build step and there are no dependencies.
+
+Jack's Hero Squad gets its levels from `tools/build_hero_levels.py`, which
+plays out every order of moves and keeps only levels that can never leave
+the player stuck.
 
 Logan's Coloring Book keeps its pictures as separate files, one folder per
 book under `logans-coloring-book/packs/`. They are drawn by
