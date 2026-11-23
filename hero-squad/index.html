@@ -47,6 +47,7 @@ button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 
 /* map */
 #map{overflow-y:auto;-webkit-overflow-scrolling:touch}
+#map>*{flex:none}   /* the map scrolls; nothing in it may be squashed to make room */
 #mapTop{display:flex;align-items:center;gap:12px}
 #mapTop img{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:50% 12%;background:#fff;border:3px solid var(--sun);flex:none}
 #mapTop h1{margin:0;font-size:clamp(22px,5vw,34px);font-weight:900;letter-spacing:.02em;flex:1;line-height:1.05}
