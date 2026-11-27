@@ -115,15 +115,251 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .row{display:flex;justify-content:center;gap:16px;align-items:center}
 .big.go{width:84px;height:84px}
 .big.go svg{width:44px;height:44px}
+
+/* ---------- home ---------- */
+#home{overflow-y:auto}
+#home>*{flex:none}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top h1{margin:0;font-size:clamp(20px,4.6vw,32px);font-weight:900;letter-spacing:.04em;flex:1;line-height:1.05}
+.top .face{width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:50% 12%;background:#fff;border:3px solid var(--sun);flex:none}
+.pill img{width:22px;height:32px;object-fit:contain}
+.tl{display:flex;align-items:center;gap:8px;font-weight:900;font-size:15px;letter-spacing:.08em}
+.tl b{background:var(--sun);color:var(--sun-ink);border-radius:12px;padding:3px 12px;font-size:22px}
+.xp{width:clamp(70px,16vw,190px);height:16px;border-radius:10px;background:rgba(10,18,40,.6);overflow:hidden;border:2px solid rgba(255,255,255,.25)}
+.xp i{display:block;height:100%;background:var(--sun);transition:width .6s}
+#tiles{flex:1 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;min-height:min(70vh,560px)}
+@media (orientation:portrait){ #tiles{grid-template-columns:1fr} }
+.tile{position:relative;border-radius:26px;overflow:hidden;min-height:132px;border:4px solid rgba(255,255,255,.2);box-shadow:0 6px 0 rgba(0,0,0,.28);background:#1b2f5e center/cover}
+.tile:active{transform:translateY(3px)}
+.tile .who{position:absolute;left:0;right:0;top:6%;bottom:46px;display:flex;align-items:flex-end;justify-content:center;gap:2%}
+.tile .who img{height:100%;max-width:32%;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.4))}
+.tile .name{position:absolute;left:0;right:0;bottom:0;padding:9px 6px;background:rgba(12,20,45,.82);font-weight:900;font-size:clamp(18px,3.4vw,26px);letter-spacing:.08em}
+
+/* ---------- shared pieces ---------- */
+.btn{border-radius:99px;background:var(--sun);color:var(--sun-ink);font-weight:900;font-size:19px;padding:11px 18px;box-shadow:0 5px 0 rgba(0,0,0,.3);
+  display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.04em}
+.btn:active{transform:translateY(3px)}
+.btn.dim{background:var(--quiet);color:rgba(255,255,255,.75);box-shadow:none}
+.btn img{width:20px;height:30px;object-fit:contain}
+.stage{position:relative}
+.stage img{position:absolute;inset:8% 8% 26%;width:84%;height:66%;object-fit:contain;pointer-events:none}
+.stage.boss{background:#fff;color:#14213d}
+.stage.boss .st, .stage.pic .st{position:absolute;left:0;right:0;bottom:5px}
+
+/* ---------- heroes ---------- */
+#squad{overflow-y:auto}
+#squad>*{flex:none}
+#squadBody{display:flex;gap:14px;margin-top:12px;align-items:flex-start}
+#roster{flex:1 1 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;min-width:0}
+.hc{aspect-ratio:.8;border-radius:16px;background:var(--quiet);border:4px solid transparent;position:relative;display:grid;place-items:center;padding:5px}
+.hc img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;min-height:0}
+.hc.sel{border-color:var(--sun);background:rgba(255,210,63,.2)}
+.hc .lvb{position:absolute;left:4px;top:4px;background:#14213d;border-radius:9px;padding:1px 7px;font-weight:900;font-size:14px}
+.hc .in{position:absolute;right:-7px;top:-7px;width:26px;height:26px;border-radius:50%;background:#4aa8ff;border:3px solid #14213d;display:grid;place-items:center}
+.hc .in svg{width:14px;height:14px}
+.hc.shut img{opacity:.28;filter:grayscale(1)}
+.hc .need{position:absolute;left:0;right:0;bottom:5px;text-align:center;font-weight:900;font-size:14px}
+#panel{flex:1.15 1 0;min-width:0;border-radius:24px;background:linear-gradient(#2c4a8c,#1b2f5e);border:4px solid var(--sun);padding:14px 16px}
+#panel h2{margin:0 0 8px;font-size:clamp(20px,3.6vw,28px);font-weight:900;letter-spacing:.05em}
+#pMain{display:flex;gap:12px}
+#pLeft{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center}
+#pLeft img{width:100%;height:clamp(150px,34vh,300px);object-fit:contain}
+.pow{background:var(--sun);color:var(--sun-ink);border-radius:16px;padding:4px 20px;font-weight:900;border:4px solid #14213d;text-align:center;margin-top:6px}
+.pow small{display:block;font-size:12px;letter-spacing:.1em}.pow b{font-size:30px;line-height:1}
+#pRight{flex:1.1 1 0;min-width:0}
+.box{background:rgba(10,18,40,.4);border-radius:16px;padding:10px 12px;margin-bottom:10px}
+.box h3{margin:0 0 2px;font-size:13px;letter-spacing:.1em;font-weight:900;opacity:.85}
+.box .val{font-size:26px;font-weight:900}
+.box .val span{opacity:.7;font-size:20px}
+.box .btn{margin-top:8px;width:100%}
+.sps{font-size:26px;letter-spacing:3px;color:var(--sun)}.sps i{font-style:normal;opacity:.3;color:#fff}
+.note{font-size:14px;font-weight:700;opacity:.85;min-height:18px}
+#teamRow{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+#teamRow b{font-size:13px;letter-spacing:.1em}
+.slot{width:58px;height:68px;border-radius:12px;background:rgba(10,18,40,.4);border:3px solid #4aa8ff;display:grid;place-items:center;padding:3px}
+.slot img{max-width:100%;max-height:100%;object-fit:contain;min-height:0}
+.slot.shut{border:3px dashed rgba(255,255,255,.35);font-weight:900;font-size:11px;text-align:center;line-height:1.2}
+@media (orientation:portrait){ #squadBody{flex-direction:column-reverse;align-items:stretch} #roster,#panel{flex:none} }
+
+/* ---------- campaign fight ---------- */
+#battle{padding-left:0;padding-right:0;padding-bottom:0}
+#bTop{display:flex;align-items:center;gap:10px;padding:0 calc(env(safe-area-inset-right) + 12px) 6px calc(env(safe-area-inset-left) + 12px)}
+#bName{flex:1;font-weight:900;font-size:clamp(16px,3.4vw,24px);letter-spacing:.06em}
+#arena{flex:1;min-height:0;position:relative;z-index:0;overflow:hidden;background:#27407a center 70%/cover}
+#vs{position:absolute;left:0;right:0;top:10px;display:flex;justify-content:center;align-items:center;gap:14px;z-index:200}
+.sideN{border-radius:18px;padding:5px 16px;font-weight:900;text-align:center;border:4px solid #1d2b3a;min-width:104px}
+.sideN small{display:block;font-size:12px;letter-spacing:.1em}.sideN b{font-size:32px;line-height:1}
+.sideN.t{background:var(--sun);color:var(--sun-ink)} .sideN.f{background:#fff;color:#1d2b3a}
+#vs>span{font-weight:900;font-size:24px;text-shadow:0 2px 0 #1d2b3a}
+.unit{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%);transition:opacity .5s, filter .3s}
+.unit img{height:min(30vh,32vw);display:block;pointer-events:none}
+.unit.boss img{height:min(44vh,36vw)}
+.unit::after{content:"";position:absolute;bottom:-6px;left:15%;right:15%;height:16px;background:rgba(0,0,0,.3);border-radius:50%;z-index:-1}
+.unit.out{opacity:0}
+.unit.cold{filter:hue-rotate(160deg) saturate(.6) brightness(1.25)}
+.hp{width:clamp(54px,9vw,96px);height:12px;border-radius:7px;background:rgba(10,18,40,.75);border:2px solid #1d2b3a;overflow:hidden;margin-bottom:3px}
+.hp i{display:block;height:100%;width:100%;transition:width .3s}
+.unit.h .hp i{background:#4aa8ff} .unit.f .hp i{background:#ff9f43}
+.ch{width:clamp(54px,9vw,96px);height:7px;border-radius:4px;background:rgba(10,18,40,.75);border:2px solid #1d2b3a;overflow:hidden;margin-bottom:4px}
+.ch i{display:block;height:100%;width:0;background:var(--sun);transition:width .3s}
+.pop{position:absolute;transform:translate(-50%,-50%);font-weight:900;font-size:clamp(24px,5vw,40px);color:#fff;-webkit-text-stroke:5px #1d2b3a;paint-order:stroke fill;pointer-events:none;z-index:300;white-space:nowrap}
+.pop.heal{color:#8fd0ff}
+.pop.move{color:var(--sun);font-size:clamp(20px,4vw,34px);letter-spacing:.05em}
+#bEnd .pill{display:inline-flex;margin:6px 4px 12px;font-size:24px}
+#bStars{display:flex;justify-content:center;gap:8px;margin:8px 0 6px}
+#bStars svg{width:54px;height:54px}
+#bStars svg.no{opacity:.28;transform:scale(.72)}
+#bStars svg.yes{animation:star .5s backwards cubic-bezier(.3,1.6,.5,1)}
+#bNews{font-weight:900;font-size:18px;letter-spacing:.04em;margin:0 0 12px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+#bNews img{width:64px;height:64px;object-fit:contain;border-radius:14px;background:rgba(255,210,63,.22);border:3px solid var(--sun)}
+#bLostNums{display:flex;justify-content:center;gap:12px;align-items:center;margin:10px 0 14px}
+
+/* ---------- potion lab ---------- */
+#lab{background:#1b1630 center/cover}
+#labCard{flex:1;min-height:0;margin-top:10px;border-radius:26px;background:rgba(14,22,48,.8);border:4px solid var(--sun);padding:14px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2.4vh,22px);overflow:hidden}
+#labCard h2{margin:0;font-size:clamp(15px,2.8vw,20px);letter-spacing:.1em;font-weight:900}
+#sum{display:flex;align-items:center;justify-content:center;gap:clamp(6px,2vw,20px);flex-wrap:wrap}
+.grp{background:rgba(255,255,255,.1);border-radius:18px;padding:8px 10px 4px;display:flex;flex-direction:column;align-items:center}
+.bots{display:grid;grid-template-columns:repeat(5,auto);gap:2px 4px;justify-content:center}
+.bots img{width:clamp(22px,4.6vw,46px);height:clamp(33px,6.9vw,68px);object-fit:contain}
+.bots img.gone{opacity:.22;filter:grayscale(1)}
+.grp b, .op{font-size:clamp(34px,7vw,56px);font-weight:900;line-height:1.1}
+.qm{min-width:clamp(64px,12vw,110px);height:clamp(76px,14vw,130px);border-radius:20px;border:5px dashed var(--sun);display:grid;place-items:center;font-size:clamp(40px,8vw,68px);font-weight:900;color:var(--sun);padding:0 8px}
+#answers{display:flex;justify-content:center;gap:clamp(12px,3vw,26px)}
+.ans{width:clamp(84px,17vw,130px);height:clamp(72px,14vw,108px);border-radius:24px;background:var(--sun);color:var(--sun-ink);font-size:clamp(38px,8vw,60px);font-weight:900;display:grid;place-items:center;box-shadow:0 7px 0 rgba(0,0,0,.3)}
+.ans:active{transform:translateY(3px)}
+.ans.no{background:var(--quiet);color:rgba(255,255,255,.45);box-shadow:none}
+.ans.yes{background:#fff;color:#14213d}
+#brew{display:flex;align-items:center;justify-content:center;gap:12px;font-weight:900;font-size:clamp(12px,2.2vw,17px);letter-spacing:.06em}
+#brew span{white-space:nowrap}
+#brew span:first-child{white-space:normal}
+#brew i{width:24px;height:24px;border-radius:50%;border:3px solid var(--sun);display:inline-block;margin-left:6px;transition:background .3s}
+#brew i.on{background:var(--sun)}
+#brew img{width:26px;height:38px;object-fit:contain}
+#rungs{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;font-size:12px;font-weight:800;letter-spacing:.08em;opacity:.75;flex:none}
+#rungs button{width:34px;height:30px;border-radius:10px;background:var(--quiet);font-weight:900;font-size:14px}
+#rungs button.on{background:#fff;color:#14213d}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.shake{animation:shake .3s}
+@keyframes fly{to{transform:translateY(-60px) scale(1.6);opacity:0}}
 </style>
 </head>
 <body>
 
-<!-- level map -->
-<div id="map" class="screen on">
-  <div id="mapTop">
-    <img src="jack.webp" alt="Jack giving a thumbs up">
+<!-- home -->
+<div id="home" class="screen on">
+  <div class="top">
+    <img class="face" src="jack.webp" alt="Jack giving a thumbs up">
     <h1>JACK'S<br>HERO SQUAD</h1>
+    <div class="tl" aria-label="Team level">TEAM <b id="homeLv">1</b><div class="xp"><i id="homeXp"></i></div></div>
+    <div class="pill"><span class="coin"></span><span id="homeCoins">0</span></div>
+    <div class="pill"><img src="art/add.webp" alt="Potions"><span id="homePots">0</span></div>
+    <button class="small" id="homeSound" aria-label="Sound on or off">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path id="homeWaves" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div id="tiles">
+    <button class="tile" id="goCamp" style="background-image:url(art/back-meadow.webp)"><span class="who"><img src="art/hero.webp" alt=""><img src="art/ogre.webp" alt=""></span><span class="name">CAMPAIGN</span></button>
+    <button class="tile" id="goAdv" style="background-image:url(scenes/01.webp)"><span class="name">ADVENTURE</span></button>
+    <button class="tile" id="goSquad"><span class="who"><img src="art/frost-fairy.webp" alt=""><img src="art/hero.webp" alt=""><img src="art/flower-fairy.webp" alt=""></span><span class="name">HEROES</span></button>
+    <button class="tile" id="goLab" style="background-image:url(art/back-cave.webp)"><span class="who"><img src="art/add.webp" alt=""></span><span class="name">POTION LAB</span></button>
+  </div>
+</div>
+
+<!-- campaign stages -->
+<div id="camp" class="screen" style="overflow-y:auto">
+  <div class="top">
+    <button class="small back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h1>CAMPAIGN</h1>
+    <div class="tl" aria-label="Team level">TEAM <b id="campLv">1</b><div class="xp"><i id="campXp"></i></div></div>
+    <div class="sideN t" style="border-width:3px;padding:2px 12px;min-width:0"><small>POWER</small><b id="campPow" style="font-size:24px">0</b></div>
+  </div>
+  <div id="campWorlds"></div>
+</div>
+
+<!-- heroes -->
+<div id="squad" class="screen">
+  <div class="top">
+    <button class="small back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="tl" style="flex:1" aria-label="Team level">TEAM LEVEL <b id="sqLv">1</b><div class="xp"><i id="sqXp"></i></div></div>
+    <div class="pill"><span class="coin"></span><span id="sqCoins">0</span></div>
+    <div class="pill"><img src="art/add.webp" alt="Potions"><span id="sqPots">0</span></div>
+  </div>
+  <div id="squadBody">
+    <div id="roster"></div>
+    <div id="panel">
+      <h2 id="pName"></h2>
+      <div id="pMain">
+        <div id="pLeft"><img id="pPic" alt=""><div class="pow"><small>POWER</small><b id="pPow">0</b></div></div>
+        <div id="pRight">
+          <div class="box"><h3>LEVEL</h3><div class="val" id="pLv"></div><button class="btn" id="pLvBtn"></button></div>
+          <div class="box"><h3 id="pMove"></h3><div class="sps" id="pSp"></div><button class="btn" id="pSpBtn"></button></div>
+          <button class="btn" id="pJoin" style="width:100%;margin-bottom:8px">JOIN THE TEAM</button>
+          <div class="note" id="pNote"></div>
+        </div>
+      </div>
+      <div id="teamRow"></div>
+    </div>
+  </div>
+</div>
+
+<!-- campaign fight -->
+<div id="battle" class="screen">
+  <div id="bTop">
+    <button class="small back" id="bBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div id="bName"></div>
+    <button class="btn dim" id="bFast" aria-label="Fast or normal speed" style="padding:8px 16px;font-size:16px">▶▶ FAST</button>
+  </div>
+  <div id="arena">
+    <div id="vs"><div class="sideN t"><small>YOUR TEAM</small><b id="bTeam">0</b></div><span>VS</span><div class="sideN f"><small>MONSTERS</small><b id="bFoes">0</b></div></div>
+  </div>
+  <div class="over" id="bEnd">
+    <div class="card">
+      <div id="bStars"></div>
+      <div><span class="pill"><span style="font-size:17px;letter-spacing:.08em">TEAM XP</span><span id="bXp">+0</span></span></div>
+      <div id="bNews"></div>
+      <div class="row">
+        <button class="big" id="bMap" aria-label="Back to the stages"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h6v6H4zM14 5h6v6h-6zM4 13h6v6H4zM14 13h6v6h-6z"/></svg></button>
+        <button class="big" id="bAgain" aria-label="Fight this stage again"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button>
+        <button class="big go" id="bNext" aria-label="Next stage"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="over" id="bLost">
+    <div class="card">
+      <h2>SO CLOSE!</h2>
+      <div id="bLostNums"><div class="sideN t"><small>YOUR TEAM</small><b id="bLostTeam">0</b></div><span style="font-weight:900;font-size:22px">VS</span><div class="sideN f"><small>MONSTERS</small><b id="bLostFoes">0</b></div></div>
+      <button class="btn" id="bTrain" style="margin:0 auto 14px">MAKE YOUR HEROES STRONGER</button>
+      <div class="row">
+        <button class="big" id="bLostMap" aria-label="Back to the stages"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h6v6H4zM14 5h6v6h-6zM4 13h6v6H4zM14 13h6v6h-6z"/></svg></button>
+        <button class="big" id="bLostAgain" aria-label="Try this stage again"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- potion lab -->
+<div id="lab" class="screen" style="background-image:linear-gradient(rgba(12,16,40,.45),rgba(12,16,40,.45)),url(art/back-cave.webp)">
+  <div class="top">
+    <button class="small back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h1>POTION LAB</h1>
+    <div class="pill" id="labPill"><img src="art/add.webp" alt="Potions"><span id="labPots">0</span></div>
+  </div>
+  <div id="labCard">
+    <h2 id="labAsk">HOW MANY BOTTLES?</h2>
+    <div id="sum"></div>
+    <div id="answers"></div>
+    <div id="brew"></div>
+  </div>
+  <div id="rungs"></div>
+</div>
+
+<!-- adventure levels -->
+<div id="map" class="screen">
+  <div id="mapTop">
+    <button class="small" id="mapBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <img src="jack.webp" alt="Jack giving a thumbs up">
+    <h1>ADVENTURE</h1>
     <div class="pill"><span class="coin"></span><span id="mapCoins">0</span></div>
     <button class="small" id="soundBtn" aria-label="Sound on or off">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path id="soundWaves" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -211,7 +447,8 @@ const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l3 6.500 7 .800-5.200 4.800
 const LOCK = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10V8a5 5 0 0 1 10 0v2h1.500v11h-13V10zm2.500 0h5V8a2.500 2.500 0 0 0-5 0z"/></svg>';
 
 /* ---------- saved progress ---------- */
-const save = {coins:0, stars:[], sound:true, hero:'hero'};
+const save = {coins:0, stars:[], sound:true, hero:'hero',
+  potions:0, xp:0, lv:{}, sp:{}, team:[], camp:[], fast:false, rung:0, run:0, slips:0, brew:0, spoil:0};
 try{ Object.assign(save, JSON.parse(localStorage.getItem('hero-squad')||'{}')); }catch(e){}
 function persist(){ try{ localStorage.setItem('hero-squad', JSON.stringify(save)); }catch(e){} }
 
@@ -248,7 +485,7 @@ const ready = im => im && im.complete && im.naturalWidth>0;
 /* ---------- map screen ---------- */
 function show(id){ for(const s of document.querySelectorAll('.screen')) s.classList.toggle('on', s.id===id); }
 function unlocked(i){ return i===0 || (save.stars[i-1]||0)>0; }
-const starCount=()=>save.stars.reduce((a,b)=>a+(b||0),0);
+const starCount=()=>save.stars.concat(save.camp).reduce((a,b)=>a+(b||0),0);   // stars from Adventure and Campaign together
 function heroOpen(h){ return starCount()>=h.need; }
 function drawHeroes(){
   const box=$('heroes'); box.innerHTML='';
@@ -994,7 +1231,378 @@ function frame(){
   }
 }
 
-drawMap();
+/* =====================================================================
+   The squad outside Adventure: team level, hero levels, Campaign fights,
+   and the Potion Lab.
+     Campaign wins  -> experience -> TEAM LEVEL (more team places, higher hero levels)
+     Adventure      -> coins      -> HERO LEVEL
+     Potion Lab     -> potions    -> each hero's SPECIAL MOVE
+   Nothing here runs on a timer or runs out: every mode can be played as often as he likes.
+   ===================================================================== */
+const SPECIALS={
+  'hero':['BIG SWING','all'], 'flower-fairy':['HEALING SHOWER','heal'], 'frost-fairy':['BIG FREEZE','freeze'],
+  'star-fairy':['STAR RAIN','all'], 'archer':['ARROW STORM','one'], 'princess':['SUN SHIELD','heal'],
+  'sorceress':['LIGHTNING','all'], 'dragon-pup':['FIRE BREATH','all'], 'giant':['GROUND SMASH','one'], 'wolf-rider':['WOLF CHARGE','one']
+};
+const MAX_SP=5, STAGES=30;
+const hIdx=k=>HEROES.findIndex(h=>h.k===k);
+const hLv=k=>save.lv[k]||1, hSp=k=>save.sp[k]||1;
+const powerOf=(k,lv,sp)=>8+hIdx(k)+3*(lv-1)+2*(sp-1);
+const hPower=k=>powerOf(k,hLv(k),hSp(k));
+const xpNeed=L=>15+10*L;
+function teamLevel(){ let L=1, x=save.xp; while(x>=xpNeed(L)){ x-=xpNeed(L); L++; } return {L, x, need:xpNeed(L)}; }
+const SLOT_AT=[1,1,1,6,10];                                   // team level that opens each place in the team
+const slots=()=>SLOT_AT.filter(n=>teamLevel().L>=n).length;
+const lvCost=k=>10+2*hLv(k), spCost=k=>hSp(k);
+/* The team is always as full as it can be: open heroes fill empty places by themselves. */
+function team(){
+  const open=HEROES.filter(heroOpen).map(h=>h.k), n=slots();
+  let t=(save.team||[]).filter((k,i,a)=>open.includes(k) && a.indexOf(k)===i).slice(0,n);
+  for(const k of open){ if(t.length>=n) break; if(!t.includes(k)) t.push(k); }
+  save.team=t; return t;
+}
+const teamPower=()=>team().reduce((a,k)=>a+hPower(k),0);
+
+/* ---------- Campaign: who is waiting at each stage ---------- */
+const FOE_KINDS=[['goblin','slime','mushroom'],['bat','skeleton','imp'],['imp','skeleton','bat']];
+const FOE_BOSS=['ogre','dragon','yeti'];
+/* Monster power at each stage, set from the team a steady player has by then. */
+const FOE_POWER=[11,11,24,24,32,41,41,49,49,62,77,88,88,106,117,117,162,162,176,140,189,189,203,203,216,239,239,252,252,212];
+const foePower=s=>FOE_POWER[s];
+function stageFoes(s){
+  const w=Math.min(2,Math.floor(s/PER_WORLD)), M=foePower(s), boss=s%PER_WORLD===PER_WORLD-1;
+  const out=[];
+  if(boss){
+    const b=Math.round(M*.6), m=Math.round(M*.2);
+    out.push({k:FOE_BOSS[w], n:b, boss:true}, {k:FOE_KINDS[w][0], n:m}, {k:FOE_KINDS[w][1], n:M-b-m});
+  }else{
+    const count=s<2?2:s<12?3:4, wts=[1.3,1,.8,.9].slice(0,count), tot=wts.reduce((a,b)=>a+b,0);
+    let left=M;
+    for(let i=0;i<count;i++){ const n=i===count-1?left:Math.max(1,Math.round(M*wts[i]/tot)); left-=n; out.push({k:FOE_KINDS[w][(s+i)%3], n:Math.max(1,n)}); }
+  }
+  return out;
+}
+/* ---------- the fight, worked out before it is shown ----------
+   Sides take turns. A unit hits the enemy at the front; every fourth turn a hero uses a special move.
+   Returns the list of things that happen, so the screen only has to play them back. */
+function simulate(heroes, foes, seed){
+  let sd=seed>>>0; const rnd=()=>{ sd=(sd*1664525+1013904223)>>>0; return sd/4294967296; };
+  const U=[];
+  heroes.forEach((h,i)=>U.push({id:U.length, side:0, k:h.k, atk:h.p, hp:h.p*5, max:h.p*5, sp:h.sp, ch:i%3, kind:SPECIALS[h.k][1]}));
+  foes.forEach((f,i)=>U.push({id:U.length, side:1, k:f.k, atk:f.n, hp:f.n*5, max:f.n*5, boss:!!f.boss, ch:0, kind:f.boss?'all':null, sp:1}));
+  const ev=[], alive=s=>U.filter(u=>u.side===s && u.hp>0), turn=[0,0];
+  const hurt=(u,d,list)=>{ d=Math.max(1,Math.round(d)); u.hp=Math.max(0,u.hp-d); list.push({id:u.id, d, hp:u.hp, ko:u.hp<=0}); };
+  let side=0, guard=0;
+  while(alive(0).length && alive(1).length && guard++<600){
+    const mine=alive(side), foe=alive(1-side);
+    const u=mine[turn[side]++ % mine.length];
+    if(u.frozen){ u.frozen=false; ev.push({t:'thaw', a:u.id}); side=1-side; continue; }
+    const vary=.85+.3*rnd();
+    if(u.kind && u.ch>=3){
+      u.ch=0; const e={t:'special', a:u.id, kind:u.kind, hits:[]};
+      if(u.kind==='all') for(const f of foe) hurt(f, u.atk*(u.boss?.6:.65+.15*u.sp)*vary, e.hits);
+      else if(u.kind==='one') hurt(foe[0], u.atk*(2+.4*u.sp)*vary, e.hits);
+      else if(u.kind==='freeze') for(const f of foe){ hurt(f, u.atk*(.3+.1*u.sp)*vary, e.hits); if(f.hp>0 && !f.boss) f.frozen=true; e.hits[e.hits.length-1].frozen=f.frozen; }
+      else if(u.kind==='heal') for(const m of mine){ const d=Math.min(m.max-m.hp, Math.round(u.atk*(.7+.25*u.sp))); m.hp+=d; e.hits.push({id:m.id, d:-d, hp:m.hp}); }
+      ev.push(e);
+    }else{
+      u.ch++; const e={t:'hit', a:u.id, hits:[]};
+      // heroes gang up on the monster at the front; monsters spread their hits around the team
+      hurt(side===0?foe[0]:foe[turn[1]%foe.length], u.atk*vary, e.hits); ev.push(e);
+    }
+    side=1-side;
+  }
+  const won=alive(0).length>0 && !alive(1).length, down=U.filter(u=>u.side===0 && u.hp<=0).length;
+  return {units:U, ev, won, stars:won?(down===0?3:down===1?2:1):0};
+}
+const teamSpec=()=>team().map(k=>({k, p:hPower(k), sp:hSp(k)})).sort((a,b)=>b.p-a.p);
+const stageOpen=s=>s===0 || (save.camp[s-1]||0)>0;
+
+/* ---------- home ---------- */
+function bars(pre){                                         // team level and its bar, wherever they are shown
+  const t=teamLevel();
+  if($(pre+'Lv')) $(pre+'Lv').textContent=t.L;
+  if($(pre+'Xp')) $(pre+'Xp').style.width=Math.round(100*t.x/t.need)+'%';
+  if($(pre+'Coins')) $(pre+'Coins').textContent=save.coins;
+  if($(pre+'Pots')) $(pre+'Pots').textContent=save.potions;
+}
+function drawHome(){
+  bars('home');
+  $('homeSound').classList.toggle('off', !save.sound);
+  $('homeWaves').style.display=save.sound?'':'none';
+}
+function goHome(){ G=null; B=null; drawHome(); show('home'); }
+for(const b of document.querySelectorAll('.back')) b.onclick=()=>{ if(b.id==='bBack'){ B=null; drawCamp(); show('camp'); } else goHome(); };
+$('homeSound').onclick=()=>{ save.sound=!save.sound; persist(); drawHome(); if(save.sound) sfx.pick(); };
+$('goAdv').onclick=()=>{ sfx.pick(); drawMap(); show('map'); };
+$('goCamp').onclick=()=>{ sfx.pick(); drawCamp(); show('camp'); };
+$('goSquad').onclick=()=>{ sfx.pick(); openSquad(); };
+$('goLab').onclick=()=>{ sfx.pick(); openLab(); };
+$('mapBack').onclick=goHome;
+
+/* ---------- campaign: the stages ---------- */
+function drawCamp(){
+  bars('camp'); $('campPow').textContent=teamPower();
+  const box=$('campWorlds'); box.innerHTML='';
+  const dots=['#7ccf5e','#9b86cf','#bfe6f7'];
+  for(let w=0; w*PER_WORLD<STAGES; w++){
+    const sec=document.createElement('section'); sec.className='world w'+w;
+    sec.innerHTML='<h2><span class="dot" style="background:'+dots[w]+'"></span>'+WORLD_NAMES[w]+'</h2>';
+    const grid=document.createElement('div'); grid.className='lvls';
+    for(let s=w*PER_WORLD; s<(w+1)*PER_WORLD; s++){
+      const b=document.createElement('button'); b.className='lv stage';
+      const st=save.camp[s]||0, boss=s%PER_WORLD===PER_WORLD-1;
+      if(!stageOpen(s)){ b.disabled=true; b.innerHTML=LOCK; b.setAttribute('aria-label','Stage '+(s+1)+', locked'); }
+      else{
+        if(!st) b.classList.add('new');
+        if(boss){ b.classList.add('boss'); b.innerHTML='<img src="'+ART_FILES[FOE_BOSS[w]]+'" alt=""><span class="st">'+'★'.repeat(st)+'</span>'; }
+        else b.innerHTML=(s+1)+'<span class="st">'+'★'.repeat(st)+'</span>';
+        b.setAttribute('aria-label',(boss?'Boss stage ':'Stage ')+(s+1)+(st?', '+st+' stars':''));
+        b.onclick=()=>startBattle(s);
+      }
+      grid.appendChild(b);
+    }
+    sec.appendChild(grid); box.appendChild(sec);
+  }
+}
+
+/* ---------- campaign: showing a fight ---------- */
+let B=null;                                                   // the fight on screen
+const H_SPOT=[[39,80],[27,93],[19,72],[9,88],[4,68]];        // where heroes stand, in hundredths of the field (feet)
+const sleep=ms=>new Promise(r=>setTimeout(r, ms/(save.fast?2.2:1)));
+function startBattle(s){
+  const w=Math.min(2,Math.floor(s/PER_WORLD)), theme=['meadow','cave','ice'][w];
+  const spec=teamSpec(), foes=stageFoes(s);
+  const sim=simulate(spec, foes, (Date.now()&0xffff)*31+s);
+  const me=B={s, sim, els:[]};
+  $('bEnd').classList.remove('on'); $('bLost').classList.remove('on');
+  $('bName').textContent=WORLD_NAMES[w]+' · STAGE '+(s+1);
+  $('bTeam').textContent=spec.reduce((a,h)=>a+h.p,0); $('bFoes').textContent=foes.reduce((a,f)=>a+f.n,0);
+  $('bFast').classList.toggle('dim', !save.fast);
+  const A=$('arena'); A.style.backgroundImage='url('+ART_FILES['back-'+theme]+')';
+  for(const el of A.querySelectorAll('.unit,.pop')) el.remove();
+  const count=[0,0];
+  for(const u of sim.units){
+    const i=count[u.side]++, p=H_SPOT[i], x=u.side?100-p[0]:p[0];
+    const el=document.createElement('div'); el.className='unit '+(u.side?'f':'h')+(u.boss?' boss':'');
+    el.style.left=x+'%'; el.style.top=p[1]+'%'; el.style.zIndex=Math.round(p[1]);
+    el.innerHTML='<div class="hp"><i></i></div>'+(u.kind?'<div class="ch"><i></i></div>':'')+'<img src="'+ART_FILES[u.k]+'" alt="">';
+    A.appendChild(el); me.els[u.id]={el, x, y:p[1], ch:u.side?0:(i%3), max:u.max};
+    if(u.kind) setCharge(me, u.id);
+  }
+  show('battle');
+  playBattle(me);
+}
+function setCharge(me, id){ const q=me.els[id], bar=q.el.querySelector('.ch i'); if(bar) bar.style.width=Math.min(100, q.ch/3*100)+'%'; }
+function bPop(me, id, text, cls){
+  const q=me.els[id], A=$('arena'), d=document.createElement('div'); d.className='pop '+(cls||''); d.textContent=text;
+  d.style.left=q.x+'%'; d.style.top=(q.y-(cls==='move'?46:30))+'%'; A.appendChild(d);
+  const a=d.animate([{transform:'translate(-50%,-50%) scale(.6)',opacity:0},{transform:'translate(-50%,-70%) scale(1.1)',opacity:1,offset:.2},{transform:'translate(-50%,-150%) scale(1)',opacity:0}],{duration:cls==='move'?1100:800,easing:'ease-out'});
+  a.onfinish=()=>d.remove();
+}
+function bLunge(me, id, toId, big){
+  const q=me.els[id], t=me.els[toId], A=$('arena');
+  const dx=(t.x-q.x)/100*A.clientWidth*.45, dy=(t.y-q.y)/100*A.clientHeight*.45, base='translate(-50%,-100%)';
+  q.el.animate([{transform:base},{transform:base+' translate('+dx+'px,'+dy+'px) scale('+(big?1.15:1)+')',offset:.45},{transform:base}],{duration:(big?420:300)/(save.fast?2:1),easing:'ease-in-out'});
+}
+function bLand(me, h){                                         // one unit takes a hit or is healed
+  const q=me.els[h.id];
+  q.el.querySelector('.hp i').style.width=Math.round(100*h.hp/q.max)+'%';
+  if(h.d<0){ if(h.d) bPop(me, h.id, '+'+(-h.d), 'heal'); return; }
+  bPop(me, h.id, '−'+h.d);
+  q.el.animate([{filter:'brightness(2.2)'},{filter:'brightness(1)'}],{duration:220});
+  if(h.frozen) q.el.classList.add('cold');
+  if(h.ko) q.el.classList.add('out');
+}
+async function playBattle(me){
+  const live=()=>B===me;
+  await sleep(900);
+  for(const e of me.sim.ev){
+    if(!live()) return;
+    const u=me.sim.units[e.a], q=me.els[e.a];
+    if(e.t==='thaw'){ q.el.classList.remove('cold'); await sleep(260); continue; }
+    if(e.t==='hit'){
+      q.ch++; setCharge(me, e.a);
+      bLunge(me, e.a, e.hits[0].id); await sleep(150);
+      if(!live()) return;
+      sfx.step(); tone(u.side?150:330,.07,'square',0,.06); bLand(me, e.hits[0]); await sleep(330);
+    }else{
+      q.ch=0; setCharge(me, e.a);
+      if(u.side===0) bPop(me, e.a, SPECIALS[u.k][0]+'!', 'move');
+      sfx.pick();
+      q.el.animate([{filter:'brightness(1)'},{filter:'brightness(1.8) drop-shadow(0 0 14px #ffd23f)'},{filter:'brightness(1)'}],{duration:500});
+      await sleep(420); if(!live()) return;
+      if(e.kind!=='heal' && e.hits.length) bLunge(me, e.a, e.hits[0].id, true);
+      await sleep(180); if(!live()) return;
+      if(e.kind==='heal') tone(660,.25,'sine',0,.12); else sfx.bonk();
+      for(const h of e.hits) bLand(me, h);
+      await sleep(520);
+    }
+  }
+  if(!live()) return;
+  await sleep(500); if(!live()) return;
+  endBattle(me);
+}
+function endBattle(me){
+  const s=me.s, sim=me.sim;
+  if(!sim.won){
+    sfx.nope();
+    $('bLostTeam').textContent=$('bTeam').textContent; $('bLostFoes').textContent=$('bFoes').textContent;
+    $('bLost').classList.add('on'); return;
+  }
+  const first=!(save.camp[s]>0), had=starCount(), before=teamLevel().L, slotsBefore=slots();
+  const xp=first?12+3*(s+1):6+(s+1);
+  save.xp+=xp; save.camp[s]=Math.max(save.camp[s]||0, sim.stars);
+  const after=teamLevel().L, fresh=HEROES.find(h=>h.need>had && h.need<=starCount());
+  team(); persist(); sfx.cheer();
+  $('bStars').innerHTML=[0,1,2].map(n=>STAR.replace('<svg','<svg class="'+(n<sim.stars?'yes':'no')+'" style="animation-delay:'+(n*.18)+'s"')).join('');
+  $('bXp').textContent='+'+xp;
+  let news='';
+  if(after>before) news+='<span>TEAM LEVEL '+after+'!</span>';
+  if(slots()>slotsBefore) news+='<span>ROOM FOR ONE MORE HERO!</span>';
+  if(fresh) news+='<img src="'+ART_FILES[fresh.k]+'" alt=""><span>NEW HERO</span>';
+  $('bNews').innerHTML=news; $('bNews').style.display=news?'flex':'none';
+  $('bNext').style.display=s+1<STAGES?'':'none';
+  $('bEnd').classList.add('on');
+}
+$('bFast').onclick=()=>{ save.fast=!save.fast; persist(); $('bFast').classList.toggle('dim', !save.fast); };
+$('bMap').onclick=$('bLostMap').onclick=()=>{ B=null; drawCamp(); show('camp'); };
+$('bAgain').onclick=$('bLostAgain').onclick=()=>startBattle(B.s);
+$('bNext').onclick=()=>startBattle(B.s+1);
+$('bTrain').onclick=()=>{ B=null; openSquad(); };
+
+/* ---------- heroes ---------- */
+let picked='hero';
+function openSquad(){ if(!HEROES.some(h=>h.k===picked)) picked='hero'; drawSquad(); show('squad'); }
+function drawSquad(note){
+  bars('sq');
+  const t=team(), cap=teamLevel().L, box=$('roster'); box.innerHTML='';
+  for(const h of HEROES){
+    const open=heroOpen(h), b=document.createElement('button');
+    b.className='hc'+(h.k===picked?' sel':'')+(open?'':' shut');
+    b.innerHTML='<img src="'+ART_FILES[h.k]+'" alt="">'+(open?'<span class="lvb">LV '+hLv(h.k)+'</span>'+(t.includes(h.k)?'<span class="in">'+TICK+'</span>':''):'<span class="need">★ '+h.need+'</span>');
+    b.setAttribute('aria-label',h.name+(open?', level '+hLv(h.k)+(t.includes(h.k)?', in the team':''):', opens at '+h.need+' stars'));
+    b.onclick=()=>{ picked=h.k; sfx.step(); drawSquad(); };
+    box.appendChild(b);
+  }
+  const h=HEROES.find(x=>x.k===picked), open=heroOpen(h), lv=hLv(picked), sp=hSp(picked);
+  $('pName').textContent=h.name.toUpperCase(); $('pPic').src=ART_FILES[picked];
+  $('pPow').textContent=hPower(picked);
+  $('pRight').style.visibility=open?'':'hidden';
+  $('pNote').textContent=open?(note||''):'';
+  if(!open){ $('pRight').style.visibility=''; $('pLv').innerHTML='★ '+h.need; $('pLvBtn').style.display=$('pSpBtn').style.display=$('pJoin').style.display='none'; $('pMove').textContent=SPECIALS[picked][0]; $('pSp').innerHTML='<i>★★★★★</i>'; $('pNote').textContent='Win '+(h.need-starCount())+' more stars to open this hero.'; }
+  else{
+    $('pLvBtn').style.display=$('pSpBtn').style.display='';
+    const atCap=lv>=cap;
+    $('pLv').innerHTML=atCap?String(lv):lv+' <span>→</span> '+(lv+1);
+    $('pLvBtn').innerHTML=atCap?'TEAM LEVEL '+cap:'LEVEL UP <span class="coin"></span>'+lvCost(picked);
+    $('pLvBtn').classList.toggle('dim', atCap || save.coins<lvCost(picked));
+    $('pMove').textContent=SPECIALS[picked][0];
+    $('pSp').innerHTML='★'.repeat(sp)+'<i>'+'★'.repeat(MAX_SP-sp)+'</i>';
+    $('pSpBtn').innerHTML=sp>=MAX_SP?'ALL DONE':'POWER UP <img src="art/add.webp" alt="potions">'+spCost(picked);
+    $('pSpBtn').classList.toggle('dim', sp>=MAX_SP || save.potions<spCost(picked));
+    $('pJoin').style.display=t.includes(picked)?'none':'';
+  }
+  const row=$('teamRow'); row.innerHTML='<b>TEAM</b>';
+  for(let i=0;i<SLOT_AT.length;i++){
+    const d=document.createElement('div');
+    if(i<slots()){ d.className='slot'; if(t[i]) d.innerHTML='<img src="'+ART_FILES[t[i]]+'" alt="'+HEROES.find(x=>x.k===t[i]).name+'">'; }
+    else{ d.className='slot shut'; d.innerHTML='TEAM<br>LV '+SLOT_AT[i]; }
+    row.appendChild(d);
+  }
+  const pw=document.createElement('div'); pw.className='pow'; pw.style.cssText='margin:0 0 0 auto;padding:2px 14px'; pw.innerHTML='<small>TEAM POWER</small><b style="font-size:24px">'+teamPower()+'</b>'; row.appendChild(pw);
+}
+$('pLvBtn').onclick=()=>{
+  const cap=teamLevel().L, lv=hLv(picked);
+  if(lv>=cap){ sfx.nope(); return drawSquad('Win Campaign fights to raise the team level. Then heroes can go higher.'); }
+  if(save.coins<lvCost(picked)){ sfx.nope(); return drawSquad('Not enough coins yet. Play Adventure to win more.'); }
+  save.coins-=lvCost(picked); save.lv[picked]=lv+1; persist(); sfx.win(); drawSquad();
+  $('pPic').animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:350});
+};
+$('pSpBtn').onclick=()=>{
+  const sp=hSp(picked);
+  if(sp>=MAX_SP) return;
+  if(save.potions<spCost(picked)){ sfx.nope(); return drawSquad('Not enough potions yet. Brew more in the Potion Lab.'); }
+  save.potions-=spCost(picked); save.sp[picked]=sp+1; persist(); sfx.win(); drawSquad();
+  $('pPic').animate([{filter:'brightness(1)'},{filter:'brightness(1.7) drop-shadow(0 0 14px #ffd23f)'},{filter:'brightness(1)'}],{duration:500});
+};
+$('pJoin').onclick=()=>{                                      // takes the place of the weakest hero when the team is full
+  const t=team();
+  if(t.length>=slots()){ let weak=0; t.forEach((k,i)=>{ if(hPower(k)<hPower(t[weak])) weak=i; }); t[weak]=picked; } else t.push(picked);
+  save.team=t; persist(); sfx.pick(); drawSquad();
+};
+
+/* ---------- potion lab ----------
+   Sums get harder a step at a time. Each step is a rung; more can be added to the end of the list
+   (counting in tens, twos and fives, times tables). Three right answers brew one potion. */
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const RUNGS=[
+  ()=>{ const a=R(1,4), b=R(1,5-a); return {a,b,op:'+'}; },                               // adding, up to 5
+  ()=>{ const t=R(6,10), a=R(1,t-1); return {a,b:t-a,op:'+'}; },                           // adding, up to 10
+  ()=>{ const a=R(2,10), b=R(1,a); return {a,b,op:'−'}; },                                 // taking away, up to 10
+  ()=>{ if(Math.random()<.5){ const t=R(11,20), a=R(Math.max(1,t-10),Math.min(10,t-1)); return {a,b:t-a,op:'+'}; } const a=R(11,20), b=R(1,10); return {a,b,op:'−'}; }   // both, up to 20
+];
+const BREW=3;
+let Q=null;
+function openLab(){ save.rung=Math.max(0,Math.min(RUNGS.length-1,save.rung|0)); newSum(); show('lab'); }
+function newSum(){
+  let q; do{ q=RUNGS[save.rung](); }while(Q && q.a===Q.a && q.b===Q.b && q.op===Q.op);
+  q.ans=q.op==='+'?q.a+q.b:q.a-q.b; q.missed=false; Q=q;
+  const set=new Set([q.ans]);
+  while(set.size<3){ const n=q.ans+R(-2,2); if(n>=0) set.add(n); }
+  q.opts=[...set].sort(()=>Math.random()-.5);
+  drawLab();
+}
+const bottles=(n,gone)=>'<div class="bots">'+Array.from({length:n},(_,i)=>'<img src="art/add.webp" alt=""'+(i>=n-gone?' class="gone"':'')+'>').join('')+'</div>';
+function drawLab(){
+  const q=Q, pics=q.a<=10 && q.b<=10;
+  $('labPots').textContent=save.potions;
+  $('labAsk').textContent=q.op==='+'?'HOW MANY BOTTLES ALL TOGETHER?':'HOW MANY BOTTLES ARE LEFT?';
+  let h;
+  if(q.op==='+') h='<div class="grp">'+(pics?bottles(q.a,0):'')+'<b>'+q.a+'</b></div><div class="op">+</div><div class="grp">'+(pics?bottles(q.b,0):'')+'<b>'+q.b+'</b></div>';
+  else h='<div class="grp">'+(q.a<=10?bottles(q.a,q.b):'')+'<b>'+q.a+' − '+q.b+'</b></div>';
+  $('sum').innerHTML=h+'<div class="op">=</div><div class="qm" id="qm">?</div>';
+  const box=$('answers'); box.innerHTML='';
+  for(const n of q.opts){ const b=document.createElement('button'); b.className='ans'; b.textContent=n; b.setAttribute('aria-label','Answer '+n); b.onclick=()=>answer(n,b); box.appendChild(b); }
+  drawBrew(); drawRungs();
+}
+function drawBrew(){
+  $('brew').innerHTML='<span>'+BREW+' RIGHT ANSWERS BREW A POTION</span><span>'+Array.from({length:BREW},(_,i)=>'<i'+(i<save.brew?' class="on"':'')+'></i>').join('')+'</span><img src="art/add.webp" alt="">';
+}
+function drawRungs(){
+  const box=$('rungs'); box.innerHTML='<span>GROWN-UPS: HOW HARD</span>';
+  RUNGS.forEach((_,i)=>{ const b=document.createElement('button'); b.textContent=i+1; b.className=i===save.rung?'on':''; b.setAttribute('aria-label','Difficulty step '+(i+1)); b.onclick=()=>{ save.rung=i; save.run=0; save.slips=0; persist(); newSum(); }; box.appendChild(b); });
+}
+let labBusy=false;
+function answer(n, b){
+  if(labBusy || b.classList.contains('no')) return;
+  const q=Q;
+  if(n!==q.ans){                                              // wrong: that button goes quiet and he can try another
+    b.classList.add('no'); b.classList.add('shake'); sfx.nope();
+    if(!q.missed){ q.missed=true; save.run=0; save.slips=(save.slips||0)+1; save.spoil=(save.spoil||0)+1;
+      if(save.spoil>=3){ save.spoil=0; save.brew=0; drawBrew(); }               // three misses spoil the brew
+      persist(); }
+    return;
+  }
+  labBusy=true; b.classList.add('yes'); $('qm').textContent=q.ans; $('qm').style.borderStyle='solid';
+  if(q.missed){ sfx.pick(); }
+  else{
+    sfx.win(); save.run=(save.run||0)+1; save.slips=0; save.brew=(save.brew||0)+1; drawBrew();
+    if(save.brew>=BREW){
+      save.brew=0; save.spoil=0; save.potions++; sfx.cheer();
+      const f=document.createElement('img'); f.src='art/add.webp'; f.alt=''; f.style.cssText='position:absolute;left:50%;top:50%;width:90px;margin:-70px 0 0 -45px;z-index:9;animation:fly .9s ease-out forwards;pointer-events:none';
+      $('lab').appendChild(f); setTimeout(()=>f.remove(), 950);
+      setTimeout(()=>{ $('labPots').textContent=save.potions; $('labPill').animate([{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:400}); drawBrew(); }, 600);
+    }
+  }
+  // six right in a row: one step harder. Two sums missed in a row: one step easier.
+  if(save.run>=6 && save.rung<RUNGS.length-1){ save.rung++; save.run=0; }
+  else if(save.slips>=2 && save.rung>0){ save.rung--; save.slips=0; save.run=0; }
+  persist();
+  setTimeout(()=>{ labBusy=false; if($('lab').classList.contains('on')) newSum(); }, save.brew===0 && !q.missed?1300:900);
+}
+
+drawHome();
 requestAnimationFrame(frame);
 try{ if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 </script>
